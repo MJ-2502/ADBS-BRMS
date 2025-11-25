@@ -1,0 +1,101 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+@variant dark (&:where(.dark, .dark *));
+
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    @apply bg-slate-100;
+}
+
+::-webkit-scrollbar-thumb {
+    @apply bg-slate-300 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-400;
+}
+
+/* Smooth scroll behavior */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Enhanced transitions */
+* {
+    @apply transition-colors;
+}
+
+/* Loading animation */
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+.animate-shimmer {
+    animation: shimmer 2s infinite linear;
+    background: linear-gradient(to right, #f1f5f9 0%, #e2e8f0 20%, #f1f5f9 40%, #f1f5f9 100%);
+    background-size: 1000px 100%;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Pulse animation for loading states */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Minimal dark theme helpers */
+:root {
+    color-scheme: light;
+}
+
+.dark {
+    color-scheme: dark;
+}
+
+.dark body {
+    background-color: #0f172a;
+    color: #f8fafc;
+}

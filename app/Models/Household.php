@@ -16,6 +16,7 @@ class Household extends Model
         'purok',
         'zone',
         'head_name',
+        'contact_number',
         'members_count',
         'notes',
     ];

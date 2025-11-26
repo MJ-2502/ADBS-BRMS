@@ -24,6 +24,7 @@ class StoreHouseholdRequest extends FormRequest
             'purok' => ['nullable', 'string', 'max:50'],
             'zone' => ['nullable', 'string', 'max:50'],
             'head_name' => ['nullable', 'string', 'max:120'],
+            'contact_number' => ['nullable', 'string', 'max:30'],
             'members_count' => ['nullable', 'integer', 'min:0'],
             'notes' => ['nullable', 'string'],
         ];

@@ -6,14 +6,14 @@ use App\Enums\UserRole;
 use App\Enums\VerificationStatus;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
-use App\Models\Resident;
+use App\Models\RegistrationRequest;
 use App\Models\User;
 use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class AuthController extends Controller
@@ -63,34 +63,43 @@ class AuthController extends Controller
     public function register(RegisterRequest $request): RedirectResponse
     {
         $proofPath = $request->file('proof_document')->store('resident-proofs');
+        $formattedPurok = $this->formatPurok($request->purok);
 
-        $user = User::create([
-            'name' => trim($request->first_name . ' ' . $request->last_name),
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => UserRole::Resident->value,
-            'phone' => $request->contact_number,
-            'purok' => $request->purok,
-            'address_line' => $request->address_line,
-            'verification_status' => VerificationStatus::Pending->value,
-            'verification_proof_path' => $proofPath,
-            'is_active' => true,
-        ]);
-
-        Resident::create([
-            'user_id' => $user->id,
+        $registration = RegistrationRequest::create([
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
             'contact_number' => $request->contact_number,
             'address_line' => $request->address_line,
-            'purok' => $request->purok,
+            'purok' => $formattedPurok,
             'years_of_residency' => $request->years_of_residency,
-            'residency_status' => 'active',
+            'proof_document_path' => $proofPath,
+            'status' => VerificationStatus::Pending->value,
         ]);
 
-        $this->activityLogger->log('register', 'Resident submitted registration', ['user_id' => $user->id]);
+        $this->activityLogger->log('register', 'Resident registration request submitted', [
+            'registration_request_id' => $registration->id,
+            'email' => $registration->email,
+        ]);
 
         return redirect()->route('login')->with('status', 'Registration received. Your account will be reviewed by the barangay office within 1-2 business days.');
+    }
+
+    private function formatPurok(?string $purok): ?string
+    {
+        if (!$purok) {
+            return null;
+        }
+
+        $trimmed = trim($purok);
+        if ($trimmed === '') {
+            return null;
+        }
+
+        return Str::startsWith(Str::lower($trimmed), 'purok')
+            ? ucfirst($trimmed)
+            : 'Purok ' . $trimmed;
     }
 
     public function logout(Request $request): RedirectResponse

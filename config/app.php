@@ -123,4 +123,12 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'auto_admin' => [
+        'enabled' => (bool) env('AUTO_ADMIN_ENABLED', false),
+        'environments' => array_values(array_filter(array_map('trim', explode(',', (string) env('AUTO_ADMIN_ENVIRONMENTS', 'local'))))),
+        'name' => env('AUTO_ADMIN_NAME', 'Barangay Admin'),
+        'email' => env('AUTO_ADMIN_EMAIL'),
+        'password' => env('AUTO_ADMIN_PASSWORD'),
+    ],
+
 ];

@@ -4,6 +4,7 @@ namespace App\Http\Requests\Auth;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class RegisterRequest extends FormRequest
 {
@@ -20,7 +21,7 @@ class RegisterRequest extends FormRequest
         return [
             'first_name' => ['required', 'string', 'max:100'],
             'last_name' => ['required', 'string', 'max:100'],
-            'email' => ['required', 'email', 'unique:users,email'],
+            'email' => ['required', 'email', 'unique:users,email', Rule::unique('registration_requests', 'email')],
             'password' => ['required', 'confirmed', 'min:8'],
             'contact_number' => ['nullable', 'string', 'max:20'],
             'years_of_residency' => ['required', 'integer', 'min:0'],

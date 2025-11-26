@@ -17,6 +17,7 @@ class HouseholdFactory extends Factory
             'purok' => 'Purok ' . $this->faker->numberBetween(1, 7),
             'zone' => 'Zone ' . $this->faker->numberBetween(1, 5),
             'head_name' => $this->faker->name(),
+            'contact_number' => $this->faker->numerify('09#########'),
             'members_count' => $this->faker->numberBetween(2, 8),
             'notes' => $this->faker->boolean(20) ? $this->faker->sentence() : null,
         ];

@@ -5,19 +5,25 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Household\StoreHouseholdRequest;
 use App\Models\Household;
 use App\Services\ActivityLogger;
+use App\Services\HouseholdRecordArchive;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 
 class HouseholdController extends Controller
 {
-    public function __construct(private readonly ActivityLogger $activityLogger)
+    public function __construct(
+        private readonly ActivityLogger $activityLogger,
+        private readonly HouseholdRecordArchive $householdRecordArchive
+    )
     {
     }
 
     public function index(): View
     {
+        $households = Household::withCount('residents')->orderBy('household_number')->paginate(15);
+
         return view('households.index', [
-            'households' => Household::withCount('residents')->orderBy('household_number')->paginate(15),
+            'households' => $households,
         ]);
     }
 
@@ -30,6 +36,8 @@ class HouseholdController extends Controller
     {
         $household = Household::create($request->validated());
         $this->activityLogger->log('household.created', 'Household added', ['household_id' => $household->id]);
+
+        $this->householdRecordArchive->appendHousehold($household, $request->user());
 
         return redirect()->route('households.index')->with('status', 'Household saved.');
     }
@@ -60,4 +68,5 @@ class HouseholdController extends Controller
 
         return redirect()->route('households.index')->with('status', 'Household removed.');
     }
+
 }

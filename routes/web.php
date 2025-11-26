@@ -9,6 +9,7 @@ use App\Http\Controllers\BackupController;
 use App\Http\Controllers\CertificateRequestController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HouseholdController;
+use App\Http\Controllers\HouseholdRecordController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResidentController;
 use Illuminate\Support\Facades\Route;
@@ -39,12 +40,16 @@ Route::middleware('auth')->group(function (): void {
     Route::middleware('role:admin,clerk')->group(function (): void {
         Route::resource('residents', ResidentController::class);
         Route::resource('households', HouseholdController::class)->except(['show']);
+        Route::get('household-records', [HouseholdRecordController::class, 'index'])->name('household-records.index');
+        Route::post('household-records', [HouseholdRecordController::class, 'store'])->name('household-records.store');
+        Route::get('household-records/template', [HouseholdRecordController::class, 'template'])->name('household-records.template');
+        Route::get('household-records/{householdRecord}/download', [HouseholdRecordController::class, 'download'])->name('household-records.download');
 
         Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
         Route::get('verifications', [AccountVerificationController::class, 'index'])->name('verifications.index');
-        Route::post('verifications/{user}/approve', [AccountVerificationController::class, 'approve'])->name('verifications.approve');
-        Route::post('verifications/{user}/reject', [AccountVerificationController::class, 'reject'])->name('verifications.reject');
-        Route::get('verifications/{user}/proof', [AccountVerificationController::class, 'downloadProof'])->name('verifications.proof');
+        Route::post('verifications/{registrationRequest}/approve', [AccountVerificationController::class, 'approve'])->name('verifications.approve');
+        Route::post('verifications/{registrationRequest}/reject', [AccountVerificationController::class, 'reject'])->name('verifications.reject');
+        Route::get('verifications/{registrationRequest}/proof', [AccountVerificationController::class, 'downloadProof'])->name('verifications.proof');
 
         Route::get('backups', [BackupController::class, 'index'])->name('backups.index');
         Route::post('backups', [BackupController::class, 'store'])->name('backups.store');

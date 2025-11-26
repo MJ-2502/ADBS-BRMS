@@ -29,13 +29,19 @@
             <input type="text" name="head_name" value="{{ old('head_name', $household->head_name) }}" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-base dark:border-slate-700 dark:bg-slate-900 dark:text-white">
         </div>
         <div>
+            <label class="text-sm font-medium text-slate-600 dark:text-slate-300">Contact number</label>
+            <input type="text" name="contact_number" value="{{ old('contact_number', $household->contact_number) }}" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-base dark:border-slate-700 dark:bg-slate-900 dark:text-white" placeholder="09XXXXXXXXX">
+        </div>
+    </div>
+    <div class="grid gap-4 sm:grid-cols-2">
+        <div>
             <label class="text-sm font-medium text-slate-600 dark:text-slate-300">Members count</label>
             <input type="number" name="members_count" min="0" value="{{ old('members_count', $household->members_count) }}" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-base dark:border-slate-700 dark:bg-slate-900 dark:text-white">
         </div>
-    </div>
-    <div>
-        <label class="text-sm font-medium text-slate-600 dark:text-slate-300">Notes</label>
-        <textarea name="notes" rows="3" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-base dark:border-slate-700 dark:bg-slate-900 dark:text-white">{{ old('notes', $household->notes) }}</textarea>
+        <div>
+            <label class="text-sm font-medium text-slate-600 dark:text-slate-300">Notes</label>
+            <textarea name="notes" rows="3" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-base dark:border-slate-700 dark:bg-slate-900 dark:text-white">{{ old('notes', $household->notes) }}</textarea>
+        </div>
     </div>
     <div class="flex flex-wrap items-center justify-end gap-3">
         <a href="{{ route('households.index') }}" class="text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">Cancel</a>

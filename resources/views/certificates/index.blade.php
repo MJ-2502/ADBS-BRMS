@@ -14,7 +14,7 @@
     <div>
         <label class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Status</label>
         <select name="status" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white">
-            <option value="">All statuses</option>
+            <option value="">All</option>
             @foreach($statuses as $status)
                 <option value="{{ $status['value'] }}" @selected(($filters['status'] ?? '') === $status['value'])>{{ $status['label'] }}</option>
             @endforeach

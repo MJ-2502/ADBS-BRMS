@@ -20,10 +20,31 @@ class HouseholdController extends Controller
 
     public function index(): View
     {
-        $households = Household::withCount('residents')->orderBy('household_number')->paginate(15);
+        $filters = request()->only('search', 'purok', 'zone');
+
+        $households = Household::withCount('residents')
+            ->when($filters['search'] ?? null, function ($query, $search): void {
+                $like = '%' . $search . '%';
+                $query->where(function ($subQuery) use ($like): void {
+                    $subQuery->where('household_number', 'like', $like)
+                        ->orWhere('head_name', 'like', $like)
+                        ->orWhere('address_line', 'like', $like);
+                });
+            })
+            ->when($filters['purok'] ?? null, fn ($query, $purok) => $query->where('purok', $purok))
+            ->when($filters['zone'] ?? null, fn ($query, $zone) => $query->where('zone', $zone))
+            ->orderBy('household_number')
+            ->paginate(15)
+            ->withQueryString();
+
+        $purokOptions = Household::whereNotNull('purok')->distinct()->pluck('purok');
+        $zoneOptions = Household::whereNotNull('zone')->distinct()->pluck('zone');
 
         return view('households.index', [
             'households' => $households,
+            'filters' => $filters,
+            'purokOptions' => $purokOptions,
+            'zoneOptions' => $zoneOptions,
         ]);
     }
 

@@ -22,6 +22,7 @@ class ResidentController extends Controller
     {
         $residents = Resident::with(['household', 'user'])
             ->whereNull('archived_at')
+            ->whereNull('user_id')
             ->when($request->filled('search'), function (Builder $query) use ($request): void {
                 $query->where(function (Builder $subQuery) use ($request): void {
                     $keyword = '%' . $request->string('search') . '%';

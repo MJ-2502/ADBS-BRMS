@@ -30,6 +30,15 @@
                     ->where('verification_status', \App\Enums\VerificationStatus::Pending)
                     ->count()
                 : 0;
+            $recordsActive = request()->routeIs([
+                'residents.*',
+                'resident-records.*',
+                'households.*',
+                'household-records.*',
+            ]);
+            $accountsActive = request()->routeIs([
+                'accounts.*',
+            ]);
         @endphp
         <div class="flex min-h-screen bg-slate-50 dark:bg-slate-900">
             <!-- Sidebar overlay for mobile -->
@@ -48,12 +57,34 @@
                         </svg>
                     </button>
                 </div>
-                <nav class="mt-8 space-y-1 text-sm font-medium">
+                <nav class="mt-8 space-y-1 overflow-y-auto pr-1 text-sm font-medium" style="max-height: calc(100vh - 220px);">
                     <a href="{{ route('dashboard') }}" class="flex items-center rounded px-3 py-2 {{ request()->routeIs('dashboard') ? 'bg-slate-100 text-slate-900 dark:bg-slate-800/70 dark:text-white' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white' }}">Dashboard</a>
                     <a href="{{ route('certificates.index') }}" class="flex items-center rounded px-3 py-2 {{ request()->routeIs('certificates.*') ? 'bg-slate-100 text-slate-900 dark:bg-slate-800/70 dark:text-white' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white' }}">Certificates</a>
                     @if(auth()->user()?->canManageRecords())
-                        <a href="{{ route('residents.index') }}" class="flex items-center rounded px-3 py-2 {{ request()->routeIs('residents.*') ? 'bg-slate-100 text-slate-900 dark:bg-slate-800/70 dark:text-white' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white' }}">Residents</a>
-                        <a href="{{ route('households.index') }}" class="flex items-center rounded px-3 py-2 {{ request()->routeIs('households.*') ? 'bg-slate-100 text-slate-900 dark:bg-slate-800/70 dark:text-white' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white' }}">Households</a>
+                        <div class="rounded px-3 py-2 {{ $accountsActive ? 'bg-slate-100 text-slate-900 dark:bg-slate-800/70 dark:text-white' : 'text-slate-500 dark:text-slate-400' }}">
+                            <button type="button" data-sidebar-accordion data-target="accountsMenu" data-storage="accounts" data-force-open="{{ $accountsActive ? '1' : '0' }}" class="flex w-full items-center justify-between text-left text-xs font-semibold uppercase tracking-wide">
+                                <span>Accounts</span>
+                                <svg class="h-3.5 w-3.5 transition-transform" aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 6l4 4 4-4" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </button>
+                            <div id="accountsMenu" class="mt-2 space-y-1 {{ $accountsActive ? '' : 'hidden' }}">
+                                <a href="{{ route('accounts.residents.index') }}" class="flex items-center rounded px-3 py-2 pl-4 text-sm font-medium {{ request()->routeIs('accounts.residents.*') ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white' }}">Resident Accounts</a>
+                                <a href="{{ route('accounts.officials.index') }}" class="flex items-center rounded px-3 py-2 pl-4 text-sm font-medium {{ request()->routeIs('accounts.officials.*') ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white' }}">Official Accounts</a>
+                            </div>
+                        </div>
+                        <div class="rounded px-3 py-2 {{ $recordsActive ? 'bg-slate-100 text-slate-900 dark:bg-slate-800/70 dark:text-white' : 'text-slate-500 dark:text-slate-400' }}">
+                            <button type="button" data-sidebar-accordion data-target="recordsMenu" data-storage="records" data-force-open="{{ $recordsActive ? '1' : '0' }}" class="flex w-full items-center justify-between text-left text-xs font-semibold uppercase tracking-wide">
+                                <span>Records</span>
+                                <svg class="h-3.5 w-3.5 transition-transform" aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 6l4 4 4-4" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </button>
+                            <div id="recordsMenu" class="mt-2 space-y-1 {{ $recordsActive ? '' : 'hidden' }}">
+                                <a href="{{ route('residents.index') }}" class="flex items-center rounded px-3 py-2 pl-4 text-sm font-medium {{ request()->routeIs(['residents.*', 'resident-records.*']) ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white' }}">Residents</a>
+                                <a href="{{ route('households.index') }}" class="flex items-center rounded px-3 py-2 pl-4 text-sm font-medium {{ request()->routeIs(['households.*', 'household-records.*']) ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white' }}">Households</a>
+                            </div>
+                        </div>
                         <a href="{{ route('backups.index') }}" class="flex items-center rounded px-3 py-2 {{ request()->routeIs('backups.*') ? 'bg-slate-100 text-slate-900 dark:bg-slate-800/70 dark:text-white' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white' }}">Backups</a>
                         <a href="{{ route('activity-logs.index') }}" class="flex items-center rounded px-3 py-2 {{ request()->routeIs('activity-logs.*') ? 'bg-slate-100 text-slate-900 dark:bg-slate-800/70 dark:text-white' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white' }}">Activity Logs</a>
                         <a href="{{ route('verifications.index') }}" class="flex items-center justify-between rounded px-3 py-2 {{ request()->routeIs('verifications.*') ? 'bg-slate-100 text-slate-900 dark:bg-slate-800/70 dark:text-white' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white' }}">
@@ -131,6 +162,51 @@
                 </main>
             </div>
         </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelectorAll('[data-sidebar-accordion]').forEach((toggle) => {
+                    const targetId = toggle.getAttribute('data-target');
+                    if (!targetId) {
+                        return;
+                    }
+
+                    const menu = document.getElementById(targetId);
+                    if (!menu) {
+                        return;
+                    }
+
+                    const storageKey = 'brms-sidebar-' + (toggle.getAttribute('data-storage') ?? targetId);
+                    const forceOpen = toggle.getAttribute('data-force-open') === '1';
+                    const stored = localStorage.getItem(storageKey);
+                    const icon = toggle.querySelector('svg');
+
+                    const setState = (isOpen) => {
+                        toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                        menu.classList.toggle('hidden', !isOpen);
+                        if (icon) {
+                            icon.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+                        }
+                    };
+
+                    let isOpen;
+                    if (forceOpen) {
+                        isOpen = true;
+                    } else if (stored !== null) {
+                        isOpen = stored === '1';
+                    } else {
+                        isOpen = false;
+                    }
+
+                    setState(isOpen);
+
+                    toggle.addEventListener('click', () => {
+                        isOpen = !isOpen;
+                        setState(isOpen);
+                        localStorage.setItem(storageKey, isOpen ? '1' : '0');
+                    });
+                });
+            });
+        </script>
         @stack('scripts')
     </body>
 </html>

@@ -11,7 +11,10 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HouseholdController;
 use App\Http\Controllers\HouseholdRecordController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ResidentAccountController;
 use App\Http\Controllers\ResidentController;
+use App\Http\Controllers\ResidentRecordController;
+use App\Http\Controllers\OfficialAccountController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard');
@@ -40,10 +43,29 @@ Route::middleware('auth')->group(function (): void {
     Route::middleware('role:admin,clerk')->group(function (): void {
         Route::resource('residents', ResidentController::class);
         Route::resource('households', HouseholdController::class)->except(['show']);
+        Route::prefix('accounts')->as('accounts.')->group(function (): void {
+            Route::get('residents', [ResidentAccountController::class, 'index'])->name('residents.index');
+            Route::get('residents/create', [ResidentAccountController::class, 'create'])->name('residents.create');
+            Route::post('residents', [ResidentAccountController::class, 'store'])->name('residents.store');
+            Route::get('residents/{resident}/edit', [ResidentAccountController::class, 'edit'])->name('residents.edit');
+            Route::put('residents/{resident}', [ResidentAccountController::class, 'update'])->name('residents.update');
+            Route::delete('residents/{resident}', [ResidentAccountController::class, 'destroy'])->name('residents.destroy');
+            Route::get('residents/{resident}/proof', [ResidentAccountController::class, 'downloadProof'])->name('residents.proof');
+            Route::get('officials', [OfficialAccountController::class, 'index'])->name('officials.index');
+            Route::get('officials/create', [OfficialAccountController::class, 'create'])->name('officials.create');
+            Route::post('officials', [OfficialAccountController::class, 'store'])->name('officials.store');
+            Route::get('officials/{official}/edit', [OfficialAccountController::class, 'edit'])->name('officials.edit');
+            Route::put('officials/{official}', [OfficialAccountController::class, 'update'])->name('officials.update');
+            Route::delete('officials/{official}', [OfficialAccountController::class, 'destroy'])->name('officials.destroy');
+        });
         Route::get('household-records', [HouseholdRecordController::class, 'index'])->name('household-records.index');
         Route::post('household-records', [HouseholdRecordController::class, 'store'])->name('household-records.store');
         Route::get('household-records/template', [HouseholdRecordController::class, 'template'])->name('household-records.template');
         Route::get('household-records/{householdRecord}/download', [HouseholdRecordController::class, 'download'])->name('household-records.download');
+        Route::get('resident-records', [ResidentRecordController::class, 'index'])->name('resident-records.index');
+        Route::post('resident-records', [ResidentRecordController::class, 'store'])->name('resident-records.store');
+        Route::get('resident-records/template', [ResidentRecordController::class, 'template'])->name('resident-records.template');
+        Route::get('resident-records/{residentRecord}/download', [ResidentRecordController::class, 'download'])->name('resident-records.download');
 
         Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
         Route::get('verifications', [AccountVerificationController::class, 'index'])->name('verifications.index');

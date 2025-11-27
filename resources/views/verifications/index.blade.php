@@ -68,17 +68,21 @@
                     </td>
                     <td class="px-4 py-3 text-slate-500 dark:text-slate-300 text-xs">{{ $requestRecord->review_notes ?? '—' }}</td>
                     <td class="px-4 py-3">
-                        <div class="space-y-2">
-                            <form method="POST" action="{{ route('verifications.approve', $requestRecord) }}" class="flex items-center justify-end gap-2">
-                                @csrf
-                                <button class="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700" @disabled($status === \App\Enums\VerificationStatus::Approved)>Approve</button>
-                            </form>
-                            <form method="POST" action="{{ route('verifications.reject', $requestRecord) }}" class="flex flex-col gap-1">
-                                @csrf
-                                <textarea name="notes" rows="2" placeholder="Rejection reason" class="w-full rounded-lg border border-rose-200 px-2 py-1 text-xs dark:border-rose-700 dark:bg-slate-900 dark:text-white" required></textarea>
-                                <button class="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-700">Reject</button>
-                            </form>
-                        </div>
+                        @if($status === \App\Enums\VerificationStatus::Pending)
+                            <div class="space-y-2">
+                                <form method="POST" action="{{ route('verifications.approve', $requestRecord) }}" class="flex items-center justify-end gap-2">
+                                    @csrf
+                                    <button class="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700">Approve</button>
+                                </form>
+                                <form method="POST" action="{{ route('verifications.reject', $requestRecord) }}" class="flex flex-col gap-1">
+                                    @csrf
+                                    <textarea name="notes" rows="2" placeholder="Rejection reason" class="w-full rounded-lg border border-rose-200 px-2 py-1 text-xs dark:border-rose-700 dark:bg-slate-900 dark:text-white" required></textarea>
+                                    <button class="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-700">Reject</button>
+                                </form>
+                            </div>
+                        @else
+                            <p class="text-right text-xs text-slate-400">No actions available</p>
+                        @endif
                     </td>
                 </tr>
             @empty

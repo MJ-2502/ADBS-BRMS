@@ -116,7 +116,6 @@
                             <p class="hidden text-xs font-medium uppercase tracking-[0.2em] text-slate-500 sm:block dark:text-slate-400">Dashboard</p>
                             <div class="flex items-baseline gap-1.5 sm:mt-1 sm:gap-2">
                                 <h1 class="truncate text-base font-semibold text-slate-900 sm:text-lg dark:text-white">{{ $appName }}</h1>
-                                <span class="hidden truncate text-xs text-slate-500 sm:inline dark:text-slate-400">{{ auth()->user()->name }}</span>
                             </div>
                         </div>
                     </div>

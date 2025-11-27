@@ -6,6 +6,7 @@ use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\ApiTokenController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BackupController;
+use App\Http\Controllers\CertificateFeeController;
 use App\Http\Controllers\CertificateRequestController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HouseholdController;
@@ -36,7 +37,9 @@ Route::middleware('auth')->group(function (): void {
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/token', [ApiTokenController::class, 'store'])->name('profile.token');
 
-    Route::resource('certificates', CertificateRequestController::class)->only(['index', 'create', 'store', 'show', 'update']);
+    Route::resource('certificates', CertificateRequestController::class);
+    Route::put('certificates/{certificate}/status', [CertificateRequestController::class, 'updateStatus'])
+        ->name('certificates.status');
     Route::get('certificates/{certificate}/download', [CertificateRequestController::class, 'download'])
         ->name('certificates.download');
 
@@ -75,6 +78,13 @@ Route::middleware('auth')->group(function (): void {
 
         Route::get('backups', [BackupController::class, 'index'])->name('backups.index');
         Route::post('backups', [BackupController::class, 'store'])->name('backups.store');
+        Route::post('backups/restore/upload', [BackupController::class, 'restoreFromUpload'])->name('backups.restore-upload');
+        Route::post('backups/{backup}/restore', [BackupController::class, 'restoreFromJob'])->name('backups.restore-job');
         Route::get('backups/{backup}/download', [BackupController::class, 'download'])->name('backups.download');
+    });
+
+    Route::middleware('role:admin')->group(function (): void {
+        Route::get('certificate-fees', [CertificateFeeController::class, 'edit'])->name('certificates.fees.edit');
+        Route::put('certificate-fees', [CertificateFeeController::class, 'update'])->name('certificates.fees.update');
     });
 });

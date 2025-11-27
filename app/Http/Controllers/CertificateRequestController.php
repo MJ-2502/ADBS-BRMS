@@ -5,15 +5,18 @@ namespace App\Http\Controllers;
 use App\Enums\CertificateStatus;
 use App\Enums\CertificateType;
 use App\Http\Requests\Certificate\StoreCertificateRequest;
+use App\Http\Requests\Certificate\UpdateCertificateRequest;
 use App\Http\Requests\Certificate\UpdateCertificateStatusRequest;
+use App\Models\CertificateFee;
 use App\Models\CertificateRequest;
 use App\Models\Resident;
+use App\Models\User;
 use App\Services\ActivityLogger;
 use App\Services\CertificatePdfService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class CertificateRequestController extends Controller
 {
@@ -68,6 +71,7 @@ class CertificateRequestController extends Controller
 
         return view('certificates.create', [
             'residents' => $residents,
+            'fees' => CertificateFee::feeMap(),
         ]);
     }
 
@@ -76,12 +80,8 @@ class CertificateRequestController extends Controller
         $data = $request->validated();
         $user = $request->user();
 
-        if (!$user->canManageRecords()) {
-            $resident = $user->residentProfile;
-            abort_if(!$resident, 403, 'No resident profile found.');
-            $data['resident_id'] = $resident->id;
-        }
-
+        $data['resident_id'] = $this->resolveResidentId($data, $user);
+        $data['fee'] = CertificateFee::amountFor($data['certificate_type']);
         $data['requested_by'] = $user->id;
         $certificateRequest = CertificateRequest::create($data);
 
@@ -99,7 +99,49 @@ class CertificateRequestController extends Controller
         ]);
     }
 
-    public function update(UpdateCertificateStatusRequest $request, CertificateRequest $certificate): RedirectResponse
+    public function edit(Request $request, CertificateRequest $certificate): View
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $this->ensureEditableByUser($certificate, $user);
+
+        $residents = $user->canManageRecords()
+            ? Resident::orderBy('last_name')->get()
+            : Resident::where('user_id', $user->id)->get();
+
+        return view('certificates.edit', [
+            'certificate' => $certificate->load('resident'),
+            'residents' => $residents,
+            'fees' => CertificateFee::feeMap(),
+        ]);
+    }
+
+    public function update(UpdateCertificateRequest $request, CertificateRequest $certificate): RedirectResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $this->ensureEditableByUser($certificate, $user);
+
+        $data = $request->validated();
+
+        $updates = [
+            'certificate_type' => $data['certificate_type'],
+            'purpose' => $data['purpose'],
+            'remarks' => $data['remarks'] ?? null,
+            'fee' => CertificateFee::amountFor($data['certificate_type']),
+            'resident_id' => $this->resolveResidentId($data, $user),
+        ];
+
+        $certificate->update($updates);
+
+        $this->activityLogger->log('certificate.updated_details', 'Certificate details updated', [
+            'certificate_request_id' => $certificate->id,
+        ]);
+
+        return redirect()->route('certificates.show', $certificate)->with('status', 'Certificate request updated.');
+    }
+
+    public function updateStatus(UpdateCertificateStatusRequest $request, CertificateRequest $certificate): RedirectResponse
     {
         abort_unless($request->user()->canManageRecords(), 403);
 
@@ -133,6 +175,21 @@ class CertificateRequestController extends Controller
         return redirect()->route('certificates.show', $certificate)->with('status', 'Certificate updated.');
     }
 
+    public function destroy(Request $request, CertificateRequest $certificate): RedirectResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $this->ensureDeletableByUser($certificate, $user);
+
+        $certificate->delete();
+
+        $this->activityLogger->log('certificate.deleted', 'Certificate request deleted', [
+            'certificate_request_id' => $certificate->id,
+        ]);
+
+        return redirect()->route('certificates.index')->with('status', 'Certificate request deleted.');
+    }
+
     public function download(Request $request, CertificateRequest $certificate)
     {
         abort_if(!$certificate->pdf_path, 404);
@@ -143,5 +200,48 @@ class CertificateRequestController extends Controller
         }
 
         return response()->download(storage_path('app/' . $certificate->pdf_path));
+    }
+
+    private function resolveResidentId(array $data, User $user): int
+    {
+        if ($user->canManageRecords()) {
+            if (!array_key_exists('resident_id', $data)) {
+                throw ValidationException::withMessages([
+                    'resident_id' => 'Resident is required.',
+                ]);
+            }
+
+            return (int) $data['resident_id'];
+        }
+
+        $resident = $user->residentProfile;
+        abort_if(!$resident, 403, 'No resident profile found.');
+
+        return $resident->id;
+    }
+
+    private function ensureEditableByUser(CertificateRequest $certificate, User $user): void
+    {
+        if ($user->canManageRecords()) {
+            return;
+        }
+
+        abort_unless($certificate->requested_by === $user->id, 403);
+        abort_unless($this->isEditableStatus($certificate), 403, 'Request can no longer be edited.');
+    }
+
+    private function ensureDeletableByUser(CertificateRequest $certificate, User $user): void
+    {
+        if ($user->canManageRecords()) {
+            return;
+        }
+
+        abort_unless($certificate->requested_by === $user->id, 403);
+        abort_unless($this->isEditableStatus($certificate), 403, 'Request can no longer be deleted.');
+    }
+
+    private function isEditableStatus(CertificateRequest $certificate): bool
+    {
+        return in_array($certificate->status, [CertificateStatus::Pending, CertificateStatus::ForReview], true);
     }
 }

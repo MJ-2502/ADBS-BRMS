@@ -5,13 +5,51 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>{{ config('app.name', 'BRMS') }}</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <style>
+            @keyframes slideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            .animate-slide-in {
+                animation: slideIn 0.4s ease-out;
+            }
+            .input-group {
+                position: relative;
+            }
+            .input-icon {
+                position: absolute;
+                left: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #94a3b8;
+                pointer-events: none;
+            }
+            .input-with-icon {
+                padding-left: 38px;
+            }
+        </style>
     </head>
-    <body class="min-h-screen bg-linear-to-br from-sky-50 via-white to-emerald-50">
-        <div class="flex min-h-screen items-center justify-center px-4 py-6 sm:py-10">
-            <div class="w-full max-w-md rounded-2xl border border-white/60 bg-white/80 p-6 shadow-xl backdrop-blur sm:p-8">
-                <h1 class="text-center text-xl font-semibold text-slate-800 sm:text-2xl">Barangay Residency Management System</h1>
-                <p class="mt-2 text-center text-sm text-slate-500">Digital residency and certification workflows</p>
-                <div class="mt-6">
+    <body class="min-h-screen bg-slate-50">
+        <div class="flex min-h-screen items-center justify-center px-4 py-8 sm:py-12">
+            <div class="w-full max-w-md">
+                <!-- Header Card -->
+                <div class="mb-6 text-center animate-slide-in">
+                    <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-linear-to-br from-emerald-500 to-sky-500 shadow-lg">
+                        <i class="fas fa-home text-2xl text-white"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold text-slate-800 sm:text-3xl">Barangay Residency<br/>Management System</h1>
+                    <p class="mt-2 text-sm text-slate-600">Digital residency and certification workflows</p>
+                </div>
+
+                <!-- Main Content Card -->
+                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xl animate-slide-in sm:p-8" style="animation-delay: 0.1s;">
                     {{ $slot ?? '' }}
                     @yield('content')
                 </div>

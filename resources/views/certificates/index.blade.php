@@ -1,9 +1,23 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $user = auth()->user();
+    $canManageCertificates = $user->canManageRecords();
+    $editableStatuses = [
+        \App\Enums\CertificateStatus::Pending->value,
+        \App\Enums\CertificateStatus::ForReview->value,
+    ];
+@endphp
+
 <div class="flex flex-wrap items-center justify-between gap-4">
     <h1 class="text-xl font-semibold text-slate-800 dark:text-white">Certificate requests</h1>
-    <a href="{{ route('certificates.create') }}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600">Request certificate</a>
+    <div class="flex flex-wrap items-center gap-2">
+        @if($user->isAdmin())
+            <a href="{{ route('certificates.fees.edit') }}" class="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-white dark:hover:bg-slate-800">Manage fees</a>
+        @endif
+        <a href="{{ route('certificates.create') }}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600">Request certificate</a>
+    </div>
 </div>
 
 <form method="GET" class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -45,10 +59,16 @@
                 <th class="px-4 py-3">Purpose</th>
                 <th class="px-4 py-3">Status</th>
                 <th class="px-4 py-3"></th>
+                <th class="px-4 py-3 text-right">Actions</th>
             </tr>
         </thead>
         <tbody>
-            @forelse($requests as $request)
+            @foreach($requests as $request)
+                @php
+                    $ownsRequest = $request->requested_by === $user->id;
+                    $isEditableState = in_array($request->status->value, $editableStatuses, true);
+                    $canEdit = $canManageCertificates || ($ownsRequest && $isEditableState);
+                @endphp
                 <tr class="border-t border-slate-100 dark:border-slate-700">
                     <td class="px-4 py-3 font-mono text-xs text-slate-500 dark:text-slate-400">{{ $request->reference_no }}</td>
                     <td class="px-4 py-3 font-medium text-slate-800 dark:text-white">{{ $request->resident?->full_name ?? 'N/A' }}</td>
@@ -60,12 +80,27 @@
                     <td class="px-4 py-3 text-right">
                         <a href="{{ route('certificates.show', $request) }}" class="text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300">Details</a>
                     </td>
+                    <td class="px-4 py-3">
+                        <div class="flex items-center justify-end gap-3 text-sm">
+                            @if($canEdit)
+                                <a href="{{ route('certificates.edit', $request) }}" class="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300">Edit</a>
+                            @endif
+                            @if($canManageCertificates || ($ownsRequest && $isEditableState))
+                                <form method="POST" action="{{ route('certificates.destroy', $request) }}" onsubmit="return confirm('Delete this certificate request?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300">Delete</button>
+                                </form>
+                            @endif
+                        </div>
+                    </td>
                 </tr>
-            @empty
+            @endforeach
+            @if($requests->isEmpty())
                 <tr>
-                    <td colspan="6" class="px-4 py-6 text-center text-slate-500 dark:text-slate-400">No certificate requests yet.</td>
+                    <td colspan="7" class="px-4 py-6 text-center text-slate-500 dark:text-slate-400">No certificate requests yet.</td>
                 </tr>
-            @endforelse
+            @endif
         </tbody>
     </table>
 </div>

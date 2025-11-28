@@ -41,8 +41,8 @@
             <div class="w-full max-w-md">
                 <!-- Header Card -->
                 <div class="mb-6 text-center animate-slide-in">
-                    <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-linear-to-br from-emerald-500 to-sky-500 shadow-lg">
-                        <i class="fas fa-home text-2xl text-white"></i>
+                    <div class="mx-auto mb-4 flex h-24 w-24 items-center justify-center">
+                        <img src="{{ asset('images/barangay-logo.png') }}" alt="Barangay Logo" class="h-full w-full object-contain">
                     </div>
                     <h1 class="text-2xl font-bold text-slate-800 sm:text-3xl">Barangay Residency<br/>Management System</h1>
                     <p class="mt-2 text-sm text-slate-600">Digital residency and certification workflows</p>

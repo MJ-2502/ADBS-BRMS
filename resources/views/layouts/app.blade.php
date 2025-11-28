@@ -46,16 +46,12 @@
             
             <!-- Sidebar -->
             <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 border-r border-slate-200 bg-white/90 px-6 py-8 backdrop-blur transition-transform duration-300 -translate-x-full lg:translate-x-0 lg:fixed dark:border-slate-800 dark:bg-slate-900/40">
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between gap-3">
                     <div>
                         <h1 class="text-xl font-semibold text-slate-800 dark:text-white">{{ $appName }}</h1>
                         <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Barangay Residency Management</p>
                     </div>
-                    <button type="button" id="closeSidebar" class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 lg:hidden dark:text-slate-400 dark:hover:bg-slate-800" aria-label="Close menu">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+                    <img src="{{ asset('images/barangay-logo.png') }}" alt="Barangay Logo" class="h-16 w-16 object-contain shrink-0">
                 </div>
                 <nav class="mt-8 space-y-1 overflow-y-auto pr-1 text-sm font-medium" style="max-height: calc(100vh - 220px);">
                     <a href="{{ route('dashboard') }}" class="flex items-center rounded px-3 py-2 {{ request()->routeIs('dashboard') ? 'bg-slate-100 text-slate-900 dark:bg-slate-800/70 dark:text-white' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white' }}">Dashboard</a>

@@ -6,6 +6,10 @@
 @php($ownsRequest = $certificate->requested_by === $user->id)
 @php($isEditableState = in_array($certificate->status->value, $editableStatuses, true))
 @php($canEdit = $user->canManageRecords() || ($ownsRequest && $isEditableState))
+@php($requiresDetails = $certificate->requiresAdditionalDetails())
+@php($detailsComplete = $certificate->detailsAreComplete())
+@php($detailSchema = ($formSchemas ?? [])[$certificate->certificate_type->value] ?? null)
+@php($detailValues = $certificate->payload ?? [])
 
 <div class="grid gap-4 sm:gap-6 lg:grid-cols-2">
     <div class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 dark:border-slate-800 dark:bg-slate-800/50">
@@ -49,6 +53,41 @@
             <a href="{{ route('certificates.download', $certificate) }}" class="mt-4 inline-flex items-center rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white dark:bg-slate-700 hover:bg-slate-800 dark:hover:bg-slate-600 transition-colors">Download PDF</a>
         @endif
     </div>
+
+    @if($requiresDetails || !empty($detailValues))
+        <div class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 dark:border-slate-800 dark:bg-slate-800/50">
+            <h2 class="text-base font-semibold text-slate-800 dark:text-white">Additional details</h2>
+            @if(!$detailsComplete)
+                <p class="mt-2 text-sm text-amber-700 dark:text-amber-300">Details have not been provided for this request.</p>
+            @else
+                <dl class="mt-4 space-y-3 text-sm">
+                    @php($rendered = 0)
+                    @foreach($detailSchema['fields'] ?? [] as $field)
+                        @php($value = $detailValues[$field['name']] ?? null)
+                        @continue(is_null($value))
+                        @php($rendered++)
+                        <div class="flex flex-col rounded-xl border border-slate-100 p-3 dark:border-slate-700">
+                            <dt class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $field['label'] ?? str($field['name'])->headline() }}</dt>
+                            <dd class="text-sm font-medium text-slate-800 dark:text-white">{{ $value }}</dd>
+                        </div>
+                    @endforeach
+                    @if($rendered === 0)
+                        @foreach($detailValues as $key => $value)
+                            <div class="flex flex-col rounded-xl border border-slate-100 p-3 dark:border-slate-700">
+                                <dt class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ str($key)->headline() }}</dt>
+                                <dd class="text-sm font-medium text-slate-800 dark:text-white">{{ $value }}</dd>
+                            </div>
+                        @endforeach
+                    @endif
+                </dl>
+                @if($certificate->details_submitted_at)
+                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                        Submitted {{ $certificate->details_submitted_at->format('F d, Y h:i A') }} by {{ $certificate->detailsSubmitter?->name ?? $certificate->requester?->name ?? 'resident' }}
+                    </p>
+                @endif
+            @endif
+        </div>
+    @endif
 
     @if($user->canManageRecords())
         <div class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 dark:border-slate-800 dark:bg-slate-800/50">

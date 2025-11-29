@@ -1,13 +1,17 @@
 @extends('layouts.app')
 
 @section('content')
+@php($canManageAccounts = auth()->user()?->canManageAccounts())
+
 <div class="flex flex-wrap items-center justify-between gap-4">
     <div>
         <p class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Accounts</p>
         <h1 class="text-xl font-semibold text-slate-800 dark:text-white">Resident accounts</h1>
         <p class="text-sm text-slate-500 dark:text-slate-400">Manage digital portal access for encoded residents.</p>
     </div>
-    <a href="{{ route('accounts.residents.create') }}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600">Create account</a>
+    @if($canManageAccounts)
+        <a href="{{ route('accounts.residents.create') }}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600">Create account</a>
+    @endif
 </div>
 
 <form method="GET" class="mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-800/50">
@@ -69,12 +73,16 @@
                     </td>
                     <td class="px-4 py-3 text-right">
                         <div class="inline-flex items-center gap-2">
-                            <a href="{{ route('accounts.residents.edit', $account) }}" class="text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300">Edit</a>
-                            <form method="POST" action="{{ route('accounts.residents.destroy', $account) }}" class="inline" onsubmit="return confirm('Remove this resident account?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300">Delete</button>
-                            </form>
+                            @if($canManageAccounts)
+                                <a href="{{ route('accounts.residents.edit', $account) }}" class="text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300">Edit</a>
+                                <form method="POST" action="{{ route('accounts.residents.destroy', $account) }}" class="inline" onsubmit="return confirm('Remove this resident account?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300">Delete</button>
+                                </form>
+                            @else
+                                <span class="text-xs text-slate-400">View only</span>
+                            @endif
                         </div>
                     </td>
                 </tr>

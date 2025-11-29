@@ -28,6 +28,11 @@ class ResidentAccountController extends Controller
         abort_unless($request->user()?->canManageRecords(), 403);
     }
 
+    private function ensureAdmin(Request $request): void
+    {
+        abort_unless($request->user()?->canManageAccounts(), 403);
+    }
+
     public function index(Request $request): View
     {
         $this->ensureStaff($request);
@@ -72,7 +77,7 @@ class ResidentAccountController extends Controller
 
     public function create(Request $request): View
     {
-        $this->ensureStaff($request);
+        $this->ensureAdmin($request);
 
         $availableResidents = Resident::whereNull('user_id')
             ->orderBy('last_name')
@@ -92,6 +97,8 @@ class ResidentAccountController extends Controller
 
     public function store(StoreResidentAccountRequest $request): RedirectResponse
     {
+        $this->ensureAdmin($request);
+
         $data = $request->validated();
 
         $resident = Resident::whereNull('user_id')->findOrFail($data['resident_id']);
@@ -132,7 +139,7 @@ class ResidentAccountController extends Controller
 
     public function edit(Request $request, Resident $resident): View
     {
-        $this->ensureStaff($request);
+        $this->ensureAdmin($request);
 
         abort_unless($resident->user, 404);
 
@@ -143,7 +150,7 @@ class ResidentAccountController extends Controller
 
     public function update(UpdateResidentAccountRequest $request, Resident $resident): RedirectResponse
     {
-        $this->ensureStaff($request);
+        $this->ensureAdmin($request);
 
         $user = $resident->user;
 
@@ -181,7 +188,7 @@ class ResidentAccountController extends Controller
 
     public function destroy(Request $request, Resident $resident): RedirectResponse
     {
-        $this->ensureStaff($request);
+        $this->ensureAdmin($request);
 
         $user = $resident->user;
 

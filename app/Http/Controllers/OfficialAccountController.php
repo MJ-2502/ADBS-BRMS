@@ -50,7 +50,7 @@ class OfficialAccountController extends Controller
 
     public function create(Request $request): View
     {
-        abort_unless($request->user()?->canManageRecords(), 403);
+        $this->ensureAdmin($request);
 
         return view('accounts.officials-create', [
             'roles' => [UserRole::Admin, UserRole::Clerk],
@@ -59,6 +59,8 @@ class OfficialAccountController extends Controller
 
     public function store(StoreOfficialAccountRequest $request): RedirectResponse
     {
+        $this->ensureAdmin($request);
+
         $data = $request->validated();
 
         $user = User::create([
@@ -75,7 +77,7 @@ class OfficialAccountController extends Controller
             'verified_at' => now(),
         ]);
 
-        $this->activityLogger->log('accounts.official.created', 'Official account created', [
+        $this->activityLogger->log('accounts.official.created', 'Staff account created', [
             'official_id' => $user->id,
             'role' => $user->role->value,
         ]);
@@ -115,7 +117,7 @@ class OfficialAccountController extends Controller
 
         $official->save();
 
-        $this->activityLogger->log('accounts.official.updated', 'Official account updated', [
+        $this->activityLogger->log('accounts.official.updated', 'Staff account updated', [
             'official_id' => $official->id,
         ]);
 
@@ -130,16 +132,21 @@ class OfficialAccountController extends Controller
 
         $official->delete();
 
-        $this->activityLogger->log('accounts.official.deleted', 'Official account deleted', [
+        $this->activityLogger->log('accounts.official.deleted', 'Staff account deleted', [
             'official_id' => $official->id,
         ]);
 
-        return redirect()->route('accounts.officials.index')->with('status', 'Official account removed.');
+        return redirect()->route('accounts.officials.index')->with('status', 'Staff account removed.');
+    }
+
+    private function ensureAdmin(Request $request): void
+    {
+        abort_unless($request->user()?->canManageAccounts(), 403);
     }
 
     private function ensureStaff(Request $request, User $official): void
     {
-        abort_unless($request->user()?->canManageRecords(), 403);
+        $this->ensureAdmin($request);
 
         abort_if(!in_array($official->role->value, UserRole::staffRoles(), true), 404);
 

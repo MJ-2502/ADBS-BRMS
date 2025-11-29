@@ -130,6 +130,11 @@ class User extends Authenticatable
         return $this->isAdmin() || $this->isClerk();
     }
 
+    public function canManageAccounts(): bool
+    {
+        return $this->isAdmin();
+    }
+
     public function isVerified(): bool
     {
         return $this->verification_status === VerificationStatus::Approved;

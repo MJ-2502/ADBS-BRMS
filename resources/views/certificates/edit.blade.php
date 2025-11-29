@@ -43,6 +43,11 @@
             'fieldId' => 'certificate_type_edit',
         ])
     </div>
+    @include('certificates.partials.details-fields', [
+        'schemas' => $formSchemas ?? [],
+        'selectFieldId' => 'certificate_type_edit',
+        'values' => old('details', $certificate->payload ?? []),
+    ])
     <div class="flex items-center justify-end gap-3">
         <a href="{{ route('certificates.show', $certificate) }}" class="text-sm text-slate-500 dark:text-slate-400">Cancel</a>
         <button class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600">Save changes</button>

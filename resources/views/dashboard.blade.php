@@ -41,18 +41,6 @@
                         <a href="{{ route('certificates.index') }}" class="inline-flex items-center rounded-full border border-white/40 px-4 py-2 text-sm font-semibold text-white/90 transition hover:bg-white/10">Review requests</a>
                     </div>
                 </div>
-                <div class="grid gap-3 sm:grid-cols-2">
-                    <div class="rounded-2xl border border-white/10 bg-white/10 p-4 shadow-inner">
-                        <p class="text-xs uppercase tracking-wide text-white/80">Requests today</p>
-                        <p class="mt-3 text-3xl font-semibold">{{ number_format($stats['requests_today']) }}</p>
-                        <p class="mt-1 text-xs text-white/70">Filed since midnight</p>
-                    </div>
-                    <div class="rounded-2xl border border-white/10 bg-white/10 p-4 shadow-inner">
-                        <p class="text-xs uppercase tracking-wide text-white/80">Pending queue</p>
-                        <p class="mt-3 text-3xl font-semibold">{{ number_format($stats['pending_requests']) }}</p>
-                        <p class="mt-1 text-xs text-white/70">Awaiting processing</p>
-                    </div>
-                </div>
             </div>
         </div>
     @endif

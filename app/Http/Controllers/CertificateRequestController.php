@@ -72,6 +72,7 @@ class CertificateRequestController extends Controller
         return view('certificates.create', [
             'residents' => $residents,
             'fees' => CertificateFee::feeMap(),
+            'formSchemas' => config('certificate_forms'),
         ]);
     }
 
@@ -80,9 +81,19 @@ class CertificateRequestController extends Controller
         $data = $request->validated();
         $user = $request->user();
 
+        $details = $data['details'] ?? [];
+        unset($data['details']);
+
         $data['resident_id'] = $this->resolveResidentId($data, $user);
         $data['fee'] = CertificateFee::amountFor($data['certificate_type']);
         $data['requested_by'] = $user->id;
+        $data['payload'] = empty($details) ? null : $details;
+
+        if (!empty($details)) {
+            $data['details_submitted_by'] = $user->id;
+            $data['details_submitted_at'] = now();
+        }
+
         $certificateRequest = CertificateRequest::create($data);
 
         $this->activityLogger->log('certificate.created', 'Certificate requested', [
@@ -95,7 +106,8 @@ class CertificateRequestController extends Controller
     public function show(CertificateRequest $certificate): View
     {
         return view('certificates.show', [
-            'certificate' => $certificate->load(['resident', 'requester', 'approver']),
+            'certificate' => $certificate->load(['resident', 'requester', 'approver', 'detailsSubmitter']),
+            'formSchemas' => config('certificate_forms'),
         ]);
     }
 
@@ -113,6 +125,7 @@ class CertificateRequestController extends Controller
             'certificate' => $certificate->load('resident'),
             'residents' => $residents,
             'fees' => CertificateFee::feeMap(),
+            'formSchemas' => config('certificate_forms'),
         ]);
     }
 
@@ -123,6 +136,8 @@ class CertificateRequestController extends Controller
         $this->ensureEditableByUser($certificate, $user);
 
         $data = $request->validated();
+        $details = $data['details'] ?? [];
+        unset($data['details']);
 
         $updates = [
             'certificate_type' => $data['certificate_type'],
@@ -130,6 +145,9 @@ class CertificateRequestController extends Controller
             'remarks' => $data['remarks'] ?? null,
             'fee' => CertificateFee::amountFor($data['certificate_type']),
             'resident_id' => $this->resolveResidentId($data, $user),
+            'payload' => empty($details) ? null : $details,
+            'details_submitted_by' => empty($details) ? null : $user->id,
+            'details_submitted_at' => empty($details) ? null : now(),
         ];
 
         $certificate->update($updates);
@@ -146,6 +164,13 @@ class CertificateRequestController extends Controller
         abort_unless($request->user()->canManageRecords(), 403);
 
         $data = $request->validated();
+
+        if ($data['status'] === CertificateStatus::Released->value && !$certificate->detailsAreComplete()) {
+            return back()
+                ->withErrors(['status' => 'Resident-submitted details are required before releasing the certificate.'])
+                ->withInput();
+        }
+
         $updates = [
             'status' => $data['status'],
             'remarks' => $data['remarks'],
@@ -244,4 +269,5 @@ class CertificateRequestController extends Controller
     {
         return in_array($certificate->status, [CertificateStatus::Pending, CertificateStatus::ForReview], true);
     }
+
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\CertificateStatus;
 use App\Enums\CertificateType;
+use App\Support\CertificateFormSchema;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -25,6 +26,8 @@ class CertificateRequest extends Model
         'reference_no',
         'approved_by',
         'approved_at',
+        'details_submitted_by',
+        'details_submitted_at',
         'released_at',
         'fee',
         'expires_at',
@@ -34,6 +37,7 @@ class CertificateRequest extends Model
     protected $casts = [
         'payload' => 'array',
         'approved_at' => 'datetime',
+        'details_submitted_at' => 'datetime',
         'released_at' => 'datetime',
         'expires_at' => 'datetime',
         'fee' => 'decimal:2',
@@ -63,10 +67,29 @@ class CertificateRequest extends Model
         return $this->belongsTo(User::class, 'approved_by');
     }
 
+    public function detailsSubmitter(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'details_submitted_by');
+    }
+
     public function statusBadge(): Attribute
     {
         return Attribute::make(
             get: fn () => $this->status?->badgeColor()
         );
+    }
+
+    public function requiresAdditionalDetails(): bool
+    {
+        return CertificateFormSchema::requiresDetails($this->certificate_type);
+    }
+
+    public function detailsAreComplete(): bool
+    {
+        if (!$this->requiresAdditionalDetails()) {
+            return true;
+        }
+
+        return !empty($this->payload ?? []);
     }
 }

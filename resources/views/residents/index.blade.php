@@ -2,9 +2,29 @@
 
 @section('content')
 <div class="mb-6 flex flex-wrap items-center gap-4">
-    <form method="GET" class="flex flex-1 items-center gap-2">
-        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by name, purok, or reference" class="w-full rounded-lg border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder-slate-400">
-        <button class="rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600">Search</button>
+    <form method="GET" class="flex flex-1 flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white p-3 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-800/50">
+        <input type="text" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Search by name, purok, or reference" class="min-w-52 flex-1 rounded-lg border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder-slate-400">
+        <select name="status" class="min-w-40 rounded-lg border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-900 dark:text-white">
+            <option value="">All residency statuses</option>
+            @foreach($statusOptions as $status)
+                <option value="{{ $status }}" @selected(($filters['status'] ?? '') === $status)>{{ str($status)->headline() }}</option>
+            @endforeach
+        </select>
+        <select name="purok" class="min-w-32 rounded-lg border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-900 dark:text-white">
+            <option value="">All puroks</option>
+            @foreach($purokOptions as $purok)
+                <option value="{{ $purok }}" @selected(($filters['purok'] ?? '') === $purok)>{{ $purok }}</option>
+            @endforeach
+        </select>
+        <select name="voter" class="min-w-36 rounded-lg border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-900 dark:text-white">
+            <option value="">All voters</option>
+            <option value="yes" @selected(($filters['voter'] ?? '') === 'yes')>Registered voters</option>
+            <option value="no" @selected(($filters['voter'] ?? '') === 'no')>Non-voters</option>
+        </select>
+        <div class="flex items-center gap-2">
+            <button class="rounded-lg bg-slate-900 px-3 py-2 font-semibold text-white hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600">Apply</button>
+            <a href="{{ route('residents.index') }}" class="rounded-lg border border-slate-300 px-3 py-2 font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-900">Reset</a>
+        </div>
     </form>
     <div class="flex flex-wrap items-center gap-2">
         <a href="{{ route('resident-records.index') }}" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-100 dark:hover:bg-slate-800">Import</a>

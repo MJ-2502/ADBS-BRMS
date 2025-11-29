@@ -20,6 +20,8 @@ class ResidentController extends Controller
 
     public function index(Request $request): View
     {
+        $filters = $request->only(['search', 'status', 'purok', 'voter']);
+
         $residents = Resident::with(['household', 'user'])
             ->whereNull('archived_at')
             ->whereNull('user_id')
@@ -32,12 +34,44 @@ class ResidentController extends Controller
                         ->orWhere('reference_id', 'like', $keyword);
                 });
             })
+            ->when($request->filled('status'), fn (Builder $query) => $query->where('residency_status', $request->input('status')))
+            ->when($request->filled('purok'), fn (Builder $query) => $query->where('purok', $request->input('purok')))
+            ->when($request->filled('voter'), function (Builder $query) use ($request): void {
+                $value = $request->input('voter');
+
+                if ($value === 'yes') {
+                    $query->where('is_voter', true);
+                } elseif ($value === 'no') {
+                    $query->where(function (Builder $subQuery): void {
+                        $subQuery->whereNull('is_voter')->orWhere('is_voter', false);
+                    });
+                }
+            })
             ->orderBy('last_name')
             ->paginate(15)
             ->withQueryString();
 
+        $statusOptions = Resident::query()
+            ->whereNull('archived_at')
+            ->whereNotNull('residency_status')
+            ->distinct()
+            ->orderBy('residency_status')
+            ->pluck('residency_status')
+            ->all();
+
+        $purokOptions = Resident::query()
+            ->whereNull('archived_at')
+            ->whereNotNull('purok')
+            ->distinct()
+            ->orderBy('purok')
+            ->pluck('purok')
+            ->all();
+
         return view('residents.index', [
             'residents' => $residents,
+            'filters' => $filters,
+            'statusOptions' => $statusOptions,
+            'purokOptions' => $purokOptions,
         ]);
     }
 

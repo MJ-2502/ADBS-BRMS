@@ -35,6 +35,11 @@
         <label class="text-sm font-medium text-slate-600 dark:text-slate-300">Remarks</label>
         <textarea name="remarks" class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-900 dark:text-white">{{ old('remarks') }}</textarea>
     </div>
+    @include('certificates.partials.details-fields', [
+        'schemas' => $formSchemas ?? [],
+        'selectFieldId' => 'certificate_type_create',
+        'values' => old('details', []),
+    ])
     @include('certificates.partials.fee-preview', [
         'fees' => $fees,
         'certificateTypeOptions' => $certificateTypeOptions,

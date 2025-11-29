@@ -7,18 +7,18 @@ ADBS-BRMS is a Barangay Record Management System built with Laravel 12. It is de
 
 ### 1. Certificate Management
 - **Request System:** Residents can request certificates.
-- **Processing:** Officials can approve or reject requests and update statuses.
+- **Processing:** Staff can approve or reject requests and update statuses.
 - **Generation:** Automated PDF generation for certificates.
 - **Fee Management:** Admins can configure certificate fees.
 
 ### 2. Resident & Household Management
 - **Database:** Comprehensive CRUD operations for Residents and Households.
 - **Records:** Management of bulk resident and household records, including template downloads and file uploads.
-- **Account Management:** dedicated management for Resident and Official accounts.
+- **Account Management:** Admin-only tools for provisioning and updating Resident and Staff accounts.
 
 ### 3. Account Verification
 - **Registration:** Public registration with proof of identity submission.
-- **Verification:** Officials can review, approve, or reject registration requests.
+- **Verification:** Staff can review, approve, or reject registration requests.
 - **Proof Handling:** Secure storage and retrieval of identity proofs.
 
 ### 4. System Administration
@@ -32,8 +32,8 @@ ADBS-BRMS is a Barangay Record Management System built with Laravel 12. It is de
 |------|-------------|
 | **Guest** | Login, Register. |
 | **User** | Access Dashboard, Manage Profile, Request Certificates. |
-| **Clerk** | Manage Residents, Households, Accounts, Records, Verifications, Backups, Activity Logs. |
-| **Admin** | All Clerk permissions + Manage Certificate Fees. |
+| **Clerk** | Manage Residents, Households, Records, Verifications, Backups, Activity Logs (view-only access to accounts). |
+| **Admin** | All Clerk permissions + Manage Certificate Fees and full account administration. |
 
 ## Technical Stack
 

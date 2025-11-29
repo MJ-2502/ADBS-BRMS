@@ -4,7 +4,7 @@
 <div class="flex flex-wrap items-center justify-between gap-4">
     <div>
         <p class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Accounts</p>
-        <h1 class="text-xl font-semibold text-slate-800 dark:text-white">Edit official account</h1>
+        <h1 class="text-xl font-semibold text-slate-800 dark:text-white">Edit staff account</h1>
         <p class="text-sm text-slate-500 dark:text-slate-400">Update staff credentials or deactivate access for barangay admins or clerks.</p>
     </div>
     <a href="{{ route('accounts.officials.index') }}" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800">Back to list</a>
@@ -66,8 +66,8 @@
     </form>
     <div class="rounded-2xl border border-rose-200 bg-rose-50 p-5 text-sm text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-100">
         <h2 class="text-base font-semibold">Danger zone</h2>
-        <p class="mt-2">Deleting this official immediately revokes dashboard access. This cannot be undone.</p>
-        <form method="POST" action="{{ route('accounts.officials.destroy', $official) }}" class="mt-4" onsubmit="return confirm('Delete this official account? This action cannot be undone.');">
+        <p class="mt-2">Deleting this staff member immediately revokes dashboard access. This cannot be undone.</p>
+        <form method="POST" action="{{ route('accounts.officials.destroy', $official) }}" class="mt-4" onsubmit="return confirm('Delete this staff account? This action cannot be undone.');">
             @csrf
             @method('DELETE')
             <button class="w-full rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700">Delete account</button>

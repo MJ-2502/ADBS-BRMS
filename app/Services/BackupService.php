@@ -82,6 +82,30 @@ class BackupService
         'updated_at',
     ];
 
+    private const USER_COLUMNS = [
+        'id',
+        'name',
+        'email',
+        'email_verified_at',
+        'password',
+        'remember_token',
+        'role',
+        'phone',
+        'purok',
+        'address_line',
+        'api_token',
+        'is_active',
+        'last_login_at',
+        'preferences',
+        'verification_status',
+        'verification_proof_path',
+        'verification_notes',
+        'verified_by',
+        'verified_at',
+        'created_at',
+        'updated_at',
+    ];
+
     public function run(?User $operator = null): BackupJob
     {
         $job = BackupJob::create([
@@ -106,6 +130,7 @@ class BackupService
                         'residents' => count($payload['residents']),
                         'households' => count($payload['households']),
                         'requests' => count($payload['certificate_requests']),
+                        'users' => count($payload['users']),
                     ],
                 ],
             ]);
@@ -157,30 +182,34 @@ class BackupService
      */
     protected function restoreFromPayload(array $payload, ?User $operator, string $source): array
     {
+        $users = $this->prepareUsers($payload['users'] ?? []);
         $households = $this->prepareHouseholds($payload['households'] ?? []);
         $residents = $this->prepareResidents($payload['residents'] ?? []);
-        $requests = $this->prepareCertificateRequests($payload['certificate_requests'] ?? [], $operator);
+        $requests = $this->prepareCertificateRequests($payload['certificate_requests'] ?? [], $users, $operator);
 
         Schema::disableForeignKeyConstraints();
 
         try {
-            DB::transaction(function () use ($households, $residents, $requests): void {
-                CertificateRequest::truncate();
-                Resident::truncate();
-                Household::truncate();
+            CertificateRequest::truncate();
+            Resident::truncate();
+            Household::truncate();
+            User::truncate();
 
-                foreach ($households as $record) {
-                    $this->persistHousehold($record);
-                }
+            foreach ($users as $record) {
+                $this->persistUser($record);
+            }
 
-                foreach ($residents as $record) {
-                    $this->persistResident($record);
-                }
+            foreach ($households as $record) {
+                $this->persistHousehold($record);
+            }
 
-                foreach ($requests as $record) {
-                    $this->persistCertificate($record);
-                }
-            });
+            foreach ($residents as $record) {
+                $this->persistResident($record);
+            }
+
+            foreach ($requests as $record) {
+                $this->persistCertificate($record);
+            }
         } finally {
             Schema::enableForeignKeyConstraints();
         }
@@ -188,6 +217,7 @@ class BackupService
         return [
             'source' => $source,
             'counts' => [
+                'users' => count($users),
                 'households' => count($households),
                 'residents' => count($residents),
                 'certificate_requests' => count($requests),
@@ -220,11 +250,11 @@ class BackupService
         return array_map(fn (array $record) => Arr::only($record, self::RESIDENT_COLUMNS), $records);
     }
 
-    protected function prepareCertificateRequests(array $records, ?User $operator): array
+    protected function prepareCertificateRequests(array $records, array $users, ?User $operator): array
     {
-        $existingUserIds = User::pluck('id')->all();
-        $userLookup = array_fill_keys($existingUserIds, true);
-        $fallbackUserId = $operator?->id ?? ($existingUserIds[0] ?? null);
+        $userIds = array_column($users, 'id');
+        $userLookup = array_fill_keys($userIds, true);
+        $fallbackUserId = $userIds[0] ?? $operator?->id ?? null;
 
         return array_map(function (array $record) use ($userLookup, $fallbackUserId): array {
             unset($record['resident'], $record['requester']);
@@ -243,6 +273,11 @@ class BackupService
 
             return Arr::only($record, self::CERTIFICATE_COLUMNS);
         }, $records);
+    }
+
+    protected function prepareUsers(array $records): array
+    {
+        return array_map(fn (array $record) => Arr::only($record, self::USER_COLUMNS), $records);
     }
 
     protected function persistHousehold(array $record): void
@@ -266,6 +301,13 @@ class BackupService
         $model->saveQuietly();
     }
 
+    protected function persistUser(array $record): void
+    {
+        $model = new User();
+        $model->forceFill($record);
+        $model->saveQuietly();
+    }
+
     protected function snapshot(): array
     {
         return [
@@ -276,7 +318,14 @@ class BackupService
                 ->orderBy('created_at')
                 ->get()
                 ->toArray(),
-            'users' => User::select('id', 'name', 'email', 'role', 'is_active')->get()->toArray(),
+            'users' => User::select(self::USER_COLUMNS)
+                ->orderBy('id')
+                ->get()
+                ->map(function (User $user): array {
+                    $visible = $user->makeVisible(['password', 'remember_token', 'api_token'])->toArray(); // include hidden auth secrets
+                    return Arr::only($visible, self::USER_COLUMNS);
+                })
+                ->all(),
         ];
     }
 }

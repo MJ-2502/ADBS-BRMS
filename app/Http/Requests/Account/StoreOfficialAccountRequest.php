@@ -10,7 +10,7 @@ class StoreOfficialAccountRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->canManageRecords() ?? false;
+        return $this->user()?->canManageAccounts() ?? false;
     }
 
     /**

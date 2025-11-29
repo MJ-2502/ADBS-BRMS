@@ -4,8 +4,8 @@
 <div class="flex flex-wrap items-center justify-between gap-4">
     <div>
         <p class="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Accounts</p>
-        <h1 class="text-xl font-semibold text-slate-800 dark:text-white">Create official account</h1>
-        <p class="text-sm text-slate-500 dark:text-slate-400">Provision administrator or clerk credentials with full dashboard access.</p>
+        <h1 class="text-xl font-semibold text-slate-800 dark:text-white">Create staff account</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Provision administrator or clerk credentials with full dashboard access for staff.</p>
     </div>
     <a href="{{ route('accounts.officials.index') }}" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800">Back to list</a>
 </div>

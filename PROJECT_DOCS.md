@@ -8,7 +8,6 @@ ADBS-BRMS is a Barangay Record Management System built with Laravel 12. It is de
 ### 1. Certificate Management
 - **Request System:** Residents can request certificates.
 - **Processing:** Staff can approve or reject requests and update statuses.
-- **Generation:** Automated PDF generation for certificates.
 - **Fee Management:** Admins can configure certificate fees.
 
 ### 2. Resident & Household Management
@@ -25,6 +24,7 @@ ADBS-BRMS is a Barangay Record Management System built with Laravel 12. It is de
 - **Activity Logs:** Detailed tracking of user actions for audit trails.
 - **Backups:** Built-in system for creating, downloading, and restoring database backups.
 - **Analytics:** Dashboard with summary analytics.
+- **API Tokens:** Users (typically admins or integration scripts) can generate personal API tokens from their profile page. The system hashes tokens server-side, only reveals them once, and authenticates `routes/api.php` endpoints via Bearer tokens using the `ApiTokenAuthenticate` middleware.
 
 ## User Roles & Permissions
 
@@ -41,7 +41,6 @@ ADBS-BRMS is a Barangay Record Management System built with Laravel 12. It is de
 - **Language:** PHP 8.2+
 - **Frontend:** Blade Templates with Vite
 - **Database:** MySQL (implied)
-- **PDF Generation:** `barryvdh/laravel-dompdf`
 - **Testing:** PHPUnit
 
 ## Project Structure Highlights

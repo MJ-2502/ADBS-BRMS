@@ -4,24 +4,24 @@
 @php($values = $values ?? [])
 
 @if(!empty($schemas))
-    <div class="rounded-2xl border border-dashed border-slate-200 p-4 dark:border-slate-700">
+    <div class="rounded-2xl border border-dashed border-slate-700 p-4">
         <div class="flex items-start justify-between gap-4">
             <div>
-                <p class="text-sm font-semibold text-slate-700 dark:text-white">Certificate-specific details</p>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Complete the fields required for the selected certificate type.</p>
+                <p class="text-sm font-semibold text-white">Certificate-specific details</p>
+                <p class="text-xs text-slate-400">Complete the fields required for the selected certificate type.</p>
             </div>
             <span class="text-xs text-slate-500" data-details-selected-label></span>
         </div>
         <div id="{{ $wrapperId }}" class="mt-4 space-y-6">
-            <p class="text-sm text-slate-500 dark:text-slate-400" data-details-empty>
+            <p class="text-sm text-slate-400" data-details-empty>
                 Select a certificate type to see the required information.
             </p>
             @foreach($schemas as $type => $schema)
                 <div class="hidden space-y-4" data-details-section="{{ $type }}">
                     <div>
-                        <p class="text-sm font-semibold text-slate-800 dark:text-white">{{ $schema['title'] ?? 'Required details' }}</p>
+                        <p class="text-sm font-semibold text-white">{{ $schema['title'] ?? 'Required details' }}</p>
                         @if(!empty($schema['description']))
-                            <p class="text-xs text-slate-500 dark:text-slate-400">{{ $schema['description'] }}</p>
+                            <p class="text-xs text-slate-400">{{ $schema['description'] }}</p>
                         @endif
                     </div>
                     @foreach($schema['fields'] ?? [] as $field)
@@ -29,14 +29,14 @@
                         @php($type = $field['type'] ?? 'text')
                         @php($value = old('details.' . $name, $values[$name] ?? ''))
                         <div>
-                            <label class="text-sm font-medium text-slate-600 dark:text-slate-200" for="details_{{ $name }}">{{ $field['label'] ?? str($name)->headline() }}</label>
+                            <label class="text-sm font-medium text-slate-200" for="details_{{ $name }}">{{ $field['label'] ?? str($name)->headline() }}</label>
                             @if($type === 'textarea')
                                 <textarea
                                     id="details_{{ $name }}"
                                     name="details[{{ $name }}]"
                                     rows="4"
                                     placeholder="{{ $field['placeholder'] ?? '' }}"
-                                    class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-base dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                                    class="mt-1 w-full rounded-lg border border-slate-700 px-3 py-2.5 text-base bg-slate-900 text-white"
                                 >{{ $value }}</textarea>
                             @else
                                 <input
@@ -45,7 +45,7 @@
                                     name="details[{{ $name }}]"
                                     value="{{ $value }}"
                                     placeholder="{{ $field['placeholder'] ?? '' }}"
-                                    class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-base dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                                    class="mt-1 w-full rounded-lg border border-slate-700 px-3 py-2.5 text-base bg-slate-900 text-white"
                                 />
                             @endif
                             @error('details.' . $name)

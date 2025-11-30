@@ -16,6 +16,8 @@ use App\Http\Controllers\ResidentAccountController;
 use App\Http\Controllers\ResidentController;
 use App\Http\Controllers\ResidentRecordController;
 use App\Http\Controllers\OfficialAccountController;
+use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\VerificationCodeController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard');
@@ -25,6 +27,12 @@ Route::middleware('guest')->group(function (): void {
     Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
     Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register');
     Route::post('/register', [AuthController::class, 'register'])->name('register.submit');
+    Route::get('/forgot-password', [PasswordResetController::class, 'requestForm'])->name('password.request');
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])->name('password.email');
+    Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->name('password.store');
+    Route::post('/verification-codes/request', [VerificationCodeController::class, 'requestCode'])->name('verification-codes.request');
+    Route::post('/verification-codes/verify', [VerificationCodeController::class, 'verifyCode'])->name('verification-codes.verify');
 });
 
 Route::middleware('auth')->group(function (): void {
@@ -40,8 +48,6 @@ Route::middleware('auth')->group(function (): void {
     Route::resource('certificates', CertificateRequestController::class);
     Route::put('certificates/{certificate}/status', [CertificateRequestController::class, 'updateStatus'])
         ->name('certificates.status');
-    Route::get('certificates/{certificate}/download', [CertificateRequestController::class, 'download'])
-        ->name('certificates.download');
 
     Route::middleware('role:admin,clerk')->group(function (): void {
         Route::resource('residents', ResidentController::class);

@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>{{ config('app.name', 'BRMS') }}</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -36,20 +37,20 @@
             }
         </style>
     </head>
-    <body class="min-h-screen bg-slate-50">
+    <body class="min-h-screen bg-slate-900">
         <div class="flex min-h-screen items-center justify-center px-4 py-8 sm:py-12">
-            <div class="w-full max-w-md">
+            <div class="w-full max-w-2xl">
                 <!-- Header Card -->
                 <div class="mb-6 text-center animate-slide-in">
                     <div class="mx-auto mb-4 flex h-24 w-24 items-center justify-center">
                         <img src="{{ asset('images/barangay-logo.png') }}" alt="Barangay Logo" class="h-full w-full object-contain">
                     </div>
-                    <h1 class="text-2xl font-bold text-slate-800 sm:text-3xl">Barangay Residency<br/>Management System</h1>
-                    <p class="mt-2 text-sm text-slate-600">Digital residency and certification workflows</p>
+                    <h1 class="text-2xl font-bold text-white sm:text-3xl">Barangay Residency<br/>Management System</h1>
+                    <p class="mt-2 text-sm text-slate-400">Digital residency and certification workflows</p>
                 </div>
 
                 <!-- Main Content Card -->
-                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xl animate-slide-in sm:p-8" style="animation-delay: 0.1s;">
+                <div class="rounded-2xl border border-slate-800 bg-slate-800/50 p-6 shadow-xl animate-slide-in sm:p-8 overflow-hidden">
                     {{ $slot ?? '' }}
                     @yield('content')
                 </div>

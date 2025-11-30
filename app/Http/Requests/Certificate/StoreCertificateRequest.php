@@ -6,7 +6,6 @@ use App\Enums\CertificateType;
 use App\Support\CertificateFormSchema;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
 class StoreCertificateRequest extends FormRequest
@@ -21,8 +20,20 @@ class StoreCertificateRequest extends FormRequest
      */
     public function rules(): array
     {
+        $isAdmin = $this->user()?->canManageRecords();
+
         $rules = [
-            'resident_id' => [Rule::requiredIf(fn () => $this->user()?->canManageRecords()), 'exists:residents,id'],
+            'resident_first_name' => array_filter([
+                $isAdmin ? 'required' : 'nullable',
+                'string',
+                'max:120',
+            ]),
+            'resident_middle_initial' => ['nullable', 'string', 'max:2'],
+            'resident_last_name' => array_filter([
+                $isAdmin ? 'required' : 'nullable',
+                'string',
+                'max:120',
+            ]),
             'certificate_type' => ['required', new Enum(CertificateType::class)],
             'purpose' => ['required', 'string', 'max:255'],
             'remarks' => ['nullable', 'string'],

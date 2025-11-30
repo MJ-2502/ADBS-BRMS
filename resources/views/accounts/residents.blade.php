@@ -22,7 +22,7 @@
             <option value="{{ $value }}" @selected(($filters['status'] ?? '') === $value)>{{ $label }}</option>
         @endforeach
     </select>
-    <button class="rounded-lg bg-slate-900 px-4 py-2 text-white hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600">Apply</button>
+    <button class="rounded-lg bg-slate-900 px-4 py-2 text-white hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600">Filter</button>
     <a href="{{ route('accounts.residents.index') }}" class="rounded-lg border border-slate-200 px-4 py-2 font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-900">Reset</a>
 </form>
 

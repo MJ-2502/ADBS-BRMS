@@ -8,12 +8,14 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\RegistrationRequest;
 use App\Models\User;
+use App\Models\VerificationCode;
 use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class AuthController extends Controller
@@ -62,6 +64,21 @@ class AuthController extends Controller
 
     public function register(RegisterRequest $request): RedirectResponse
     {
+        $this->consumeVerificationToken(
+            $request->input('email_verification_token'),
+            $request->email,
+            VerificationCode::TYPE_EMAIL
+        );
+
+        $contactNumber = $request->contact_number;
+        if ($contactNumber) {
+            $this->consumeVerificationToken(
+                $request->input('contact_verification_token'),
+                $contactNumber,
+                VerificationCode::TYPE_PHONE
+            );
+        }
+
         $proofPath = $request->file('proof_document')->store('resident-proofs');
         $formattedPurok = $this->formatPurok($request->purok);
 
@@ -112,5 +129,24 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login');
+    }
+
+    private function consumeVerificationToken(string $token, string $target, string $type): void
+    {
+        $record = VerificationCode::query()
+            ->where('verification_token', $token)
+            ->where('type', $type)
+            ->where('target', $target)
+            ->whereNotNull('verified_at')
+            ->whereNull('used_at')
+            ->first();
+
+        if (!$record || $record->isExpired()) {
+            throw ValidationException::withMessages([
+                $type === VerificationCode::TYPE_EMAIL ? 'email' : 'contact_number' => 'Please verify your ' . ($type === VerificationCode::TYPE_EMAIL ? 'email address' : 'contact number') . ' again.',
+            ]);
+        }
+
+        $record->markUsed();
     }
 }

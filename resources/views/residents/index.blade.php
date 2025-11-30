@@ -1,39 +1,57 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="mb-6 flex flex-wrap items-center gap-4">
-    <form method="GET" class="flex flex-1 flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white p-3 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-800/50">
-        <input type="text" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Search by name, purok, or reference" class="min-w-52 flex-1 rounded-lg border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder-slate-400">
-        <select name="status" class="min-w-40 rounded-lg border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-900 dark:text-white">
+<div class="flex flex-wrap items-center justify-between gap-4">
+    <div>
+        <h1 class="text-xl font-semibold text-white">Residents</h1>
+        <p class="text-sm text-slate-400">Manage registered residents across all puroks.</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+        <a href="{{ route('resident-records.index') }}" class="rounded-lg border border-slate-600 px-4 py-2 text-sm font-semibold text-slate-100 hover:bg-slate-800">Import</a>
+        <a href="{{ route('residents.create') }}" class="rounded-lg bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-600">Add resident</a>
+    </div>
+</div>
+
+<form method="GET" class="mt-6 grid gap-4 rounded-2xl border border-slate-800 bg-slate-800/50 p-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div>
+        <label class="text-xs font-semibold uppercase tracking-wide text-slate-400">Search</label>
+        <input type="text" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Search by name, purok, or reference" class="mt-1 w-full rounded-lg border border-slate-700 px-3 py-2 bg-slate-900 text-white placeholder-slate-400">
+    </div>
+    <div>
+        <label class="text-xs font-semibold uppercase tracking-wide text-slate-400">Status</label>
+        <select name="status" class="mt-1 w-full rounded-lg border border-slate-700 px-3 py-2 bg-slate-900 text-white">
             <option value="">All residency statuses</option>
             @foreach($statusOptions as $status)
                 <option value="{{ $status }}" @selected(($filters['status'] ?? '') === $status)>{{ str($status)->headline() }}</option>
             @endforeach
         </select>
-        <select name="purok" class="min-w-32 rounded-lg border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-900 dark:text-white">
+    </div>
+    <div>
+        <label class="text-xs font-semibold uppercase tracking-wide text-slate-400">Purok</label>
+        <select name="purok" class="mt-1 w-full rounded-lg border border-slate-700 px-3 py-2 bg-slate-900 text-white">
             <option value="">All puroks</option>
             @foreach($purokOptions as $purok)
                 <option value="{{ $purok }}" @selected(($filters['purok'] ?? '') === $purok)>{{ $purok }}</option>
             @endforeach
         </select>
-        <select name="voter" class="min-w-36 rounded-lg border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-900 dark:text-white">
+    </div>
+    <div>
+        <label class="text-xs font-semibold uppercase tracking-wide text-slate-400">Voter</label>
+        <select name="voter" class="mt-1 w-full rounded-lg border border-slate-700 px-3 py-2 bg-slate-900 text-white">
             <option value="">All voters</option>
             <option value="yes" @selected(($filters['voter'] ?? '') === 'yes')>Registered voters</option>
             <option value="no" @selected(($filters['voter'] ?? '') === 'no')>Non-voters</option>
         </select>
-        <div class="flex items-center gap-2">
-            <button class="rounded-lg bg-slate-900 px-3 py-2 font-semibold text-white hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600">Apply</button>
-            <a href="{{ route('residents.index') }}" class="rounded-lg border border-slate-300 px-3 py-2 font-semibold text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-900">Reset</a>
-        </div>
-    </form>
-    <div class="flex flex-wrap items-center gap-2">
-        <a href="{{ route('resident-records.index') }}" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-100 dark:hover:bg-slate-800">Import</a>
-        <a href="{{ route('residents.create') }}" class="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-600">Add resident</a>
     </div>
-</div>
-<div class="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-800/50">
+    <div class="flex items-end gap-2 sm:col-span-2 lg:col-span-4">
+        <button class="rounded-lg bg-slate-700 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-600">Apply</button>
+        <a href="{{ route('residents.index') }}" class="rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-900">Reset</a>
+    </div>
+</form>
+
+<div class="mt-6 overflow-hidden rounded-2xl border border-slate-800 bg-slate-800/50">
     <table class="w-full text-sm">
-        <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-900/50 dark:text-slate-400">
+        <thead class="bg-slate-900/50 text-left text-xs uppercase tracking-wide text-slate-400">
             <tr>
                 <th class="px-4 py-3">Reference</th>
                 <th class="px-4 py-3">Resident</th>
@@ -47,16 +65,16 @@
         </thead>
         <tbody>
             @foreach($residents as $resident)
-                <tr class="border-t border-slate-100 dark:border-slate-700">
-                    <td class="px-4 py-3 font-mono text-xs dark:text-slate-300">{{ $resident->reference_id }}</td>
+                <tr class="border-t border-slate-700">
+                    <td class="px-4 py-3 font-mono text-xs text-slate-300">{{ $resident->reference_id }}</td>
                     <td class="px-4 py-3">
-                        <p class="font-medium text-slate-800 dark:text-white">{{ $resident->full_name }}</p>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">{{ str($resident->residency_status)->headline() }}</p>
+                        <p class="font-medium text-white">{{ $resident->full_name }}</p>
+                        <p class="text-xs text-slate-400">{{ str($resident->residency_status)->headline() }}</p>
                     </td>
-                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">{{ $resident->household?->household_number ? 'HH-' . $resident->household->household_number : 'Unassigned' }}</td>
-                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">{{ optional($resident->birthdate)?->format('M d, Y') ?? '—' }}</td>
-                    <td class="px-4 py-3 dark:text-slate-200">{{ $resident->purok ?? '—' }}</td>
-                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">{{ $resident->contact_number ?? '—' }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-300">{{ $resident->household?->household_number ? 'HH-' . $resident->household->household_number : 'Unassigned' }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-300">{{ optional($resident->birthdate)?->format('M d, Y') ?? '—' }}</td>
+                    <td class="px-4 py-3 text-slate-200">{{ $resident->purok ?? '—' }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-300">{{ $resident->contact_number ?? '—' }}</td>
                     <td class="px-4 py-3">
                         @php($verification = $resident->user?->verification_status)
                         @if($verification)
@@ -66,7 +84,7 @@
                         @endif
                     </td>
                     <td class="px-4 py-3 text-right">
-                        <a href="{{ route('residents.show', $resident) }}" class="text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300">View</a>
+                        <a href="{{ route('residents.show', $resident) }}" class="text-sky-400 hover:text-sky-300">View</a>
                     </td>
                 </tr>
             @endforeach

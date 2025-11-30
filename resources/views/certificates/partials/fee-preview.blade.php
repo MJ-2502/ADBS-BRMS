@@ -5,18 +5,18 @@
     $containerId = $containerId ?? ('fee-preview-' . uniqid())
 )
 
-<div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+<div class="rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-300">
     <p class="font-semibold">Certificate fee</p>
     <table class="mt-3 w-full text-sm" id="{{ $containerId }}">
         <tbody>
             <tr data-fee-empty>
-                <td class="py-2 text-slate-500 dark:text-slate-400">Select a certificate type to view its fee.</td>
-                <td class="py-2 text-right font-semibold text-slate-700 dark:text-white">—</td>
+                <td class="py-2 text-slate-400">Select a certificate type to view its fee.</td>
+                <td class="py-2 text-right font-semibold text-white">—</td>
             </tr>
             @foreach($certificateTypeOptions as $option)
                 <tr class="hidden" data-fee-row="{{ $option['value'] }}">
-                    <td class="py-2 text-slate-700 dark:text-white">{{ $option['label'] }}</td>
-                    <td class="py-2 text-right font-semibold text-slate-800 dark:text-white">₱ {{ number_format($fees[$option['value']] ?? 0, 2) }}</td>
+                    <td class="py-2 text-white">{{ $option['label'] }}</td>
+                    <td class="py-2 text-right font-semibold text-white">₱ {{ number_format($fees[$option['value']] ?? 0, 2) }}</td>
                 </tr>
             @endforeach
         </tbody>

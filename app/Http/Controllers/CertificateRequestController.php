@@ -12,7 +12,6 @@ use App\Models\CertificateRequest;
 use App\Models\Resident;
 use App\Models\User;
 use App\Services\ActivityLogger;
-use App\Services\CertificatePdfService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,7 +21,6 @@ class CertificateRequestController extends Controller
 {
     public function __construct(
         private readonly ActivityLogger $activityLogger,
-        private readonly CertificatePdfService $certificatePdfService
     ) {
     }
 
@@ -64,13 +62,7 @@ class CertificateRequestController extends Controller
 
     public function create(Request $request): View
     {
-        $user = $request->user();
-        $residents = $user->canManageRecords()
-            ? Resident::orderBy('last_name')->get()
-            : Resident::where('user_id', $user->id)->get();
-
         return view('certificates.create', [
-            'residents' => $residents,
             'fees' => CertificateFee::feeMap(),
             'formSchemas' => config('certificate_forms'),
         ]);
@@ -85,6 +77,7 @@ class CertificateRequestController extends Controller
         unset($data['details']);
 
         $data['resident_id'] = $this->resolveResidentId($data, $user);
+        unset($data['resident_first_name'], $data['resident_middle_initial'], $data['resident_last_name']);
         $data['fee'] = CertificateFee::amountFor($data['certificate_type']);
         $data['requested_by'] = $user->id;
         $data['payload'] = empty($details) ? null : $details;
@@ -117,13 +110,8 @@ class CertificateRequestController extends Controller
         $user = $request->user();
         $this->ensureEditableByUser($certificate, $user);
 
-        $residents = $user->canManageRecords()
-            ? Resident::orderBy('last_name')->get()
-            : Resident::where('user_id', $user->id)->get();
-
         return view('certificates.edit', [
             'certificate' => $certificate->load('resident'),
-            'residents' => $residents,
             'fees' => CertificateFee::feeMap(),
             'formSchemas' => config('certificate_forms'),
         ]);
@@ -187,11 +175,6 @@ class CertificateRequestController extends Controller
 
         $certificate->update($updates);
 
-        if ($data['status'] === CertificateStatus::Released->value) {
-            $pdfPath = $this->certificatePdfService->generate($certificate->fresh());
-            $certificate->update(['pdf_path' => $pdfPath]);
-        }
-
         $this->activityLogger->log('certificate.updated', 'Certificate status updated', [
             'certificate_request_id' => $certificate->id,
             'status' => $data['status'],
@@ -215,28 +198,46 @@ class CertificateRequestController extends Controller
         return redirect()->route('certificates.index')->with('status', 'Certificate request deleted.');
     }
 
-    public function download(Request $request, CertificateRequest $certificate)
-    {
-        abort_if(!$certificate->pdf_path, 404);
-
-        if (!$request->user()->canManageRecords()) {
-            $allowedIds = collect([$certificate->requested_by, $certificate->resident?->user_id])->filter()->all();
-            abort_unless(in_array($request->user()->id, $allowedIds, true), 403);
-        }
-
-        return response()->download(storage_path('app/' . $certificate->pdf_path));
-    }
-
     private function resolveResidentId(array $data, User $user): int
     {
         if ($user->canManageRecords()) {
-            if (!array_key_exists('resident_id', $data)) {
+            $firstName = trim((string) ($data['resident_first_name'] ?? ''));
+            $lastName = trim((string) ($data['resident_last_name'] ?? ''));
+            $middleInitial = trim((string) ($data['resident_middle_initial'] ?? ''));
+
+            if ($firstName === '' || $lastName === '') {
                 throw ValidationException::withMessages([
-                    'resident_id' => 'Resident is required.',
+                    'resident_first_name' => 'Resident first and last name are required.',
                 ]);
             }
 
-            return (int) $data['resident_id'];
+            $query = Resident::query()
+                ->whereRaw('LOWER(first_name) = ?', [mb_strtolower($firstName)])
+                ->whereRaw('LOWER(last_name) = ?', [mb_strtolower($lastName)]);
+
+            if ($middleInitial !== '') {
+                $initial = mb_strtolower(mb_substr($middleInitial, 0, 1));
+                $query->where(function ($inner) use ($initial): void {
+                    $inner->whereNull('middle_name')
+                        ->orWhereRaw('LOWER(LEFT(middle_name, 1)) = ?', [$initial]);
+                });
+            }
+
+            $matches = $query->get();
+
+            if ($matches->isEmpty()) {
+                throw ValidationException::withMessages([
+                    'resident_first_name' => 'No resident matched the provided name. Check the spelling and try again.',
+                ]);
+            }
+
+            if ($matches->count() > 1) {
+                throw ValidationException::withMessages([
+                    'resident_first_name' => 'Multiple residents matched the provided name. Please include the middle initial or update the resident profile to be more specific.',
+                ]);
+            }
+
+            return $matches->first()->id;
         }
 
         $resident = $user->residentProfile;

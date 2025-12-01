@@ -21,15 +21,15 @@ class RegisterRequest extends FormRequest
         return [
             'first_name' => ['required', 'string', 'max:100'],
             'last_name' => ['required', 'string', 'max:100'],
-            'email' => ['required', 'email', 'unique:users,email', Rule::unique('registration_requests', 'email')],
+            'email' => ['nullable', 'email', 'required_without:contact_number', 'unique:users,email', Rule::unique('registration_requests', 'email')],
             'password' => ['required', 'confirmed', 'min:8'],
-            'contact_number' => ['required', 'string', 'max:20'],
+            'contact_number' => ['nullable', 'string', 'max:20', 'required_without:email'],
             'years_of_residency' => ['required', 'integer', 'min:0'],
             'purok' => ['nullable', 'string', 'max:50'],
             'address_line' => ['nullable', 'string', 'max:255'],
             'proof_document' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
-            'email_verification_token' => ['required', 'uuid'],
-            'contact_verification_token' => ['required', 'uuid'],
+            'email_verification_token' => ['nullable', 'uuid', 'required_with:email'],
+            'contact_verification_token' => ['nullable', 'uuid', 'required_with:contact_number'],
         ];
     }
 }

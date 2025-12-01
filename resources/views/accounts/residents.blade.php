@@ -9,9 +9,6 @@
         <h1 class="text-xl font-semibold text-slate-800 dark:text-white">Resident accounts</h1>
         <p class="text-sm text-slate-500 dark:text-slate-400">Manage digital portal access for encoded residents.</p>
     </div>
-    @if($canManageAccounts)
-        <a href="{{ route('accounts.residents.create') }}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600">Create account</a>
-    @endif
 </div>
 
 <form method="GET" class="mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-800/50">

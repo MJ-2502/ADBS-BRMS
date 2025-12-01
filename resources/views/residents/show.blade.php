@@ -108,16 +108,38 @@
                 <dt class="text-slate-400">Email</dt>
                 <dd class="text-right font-medium text-white">{{ $resident->email ?? '—' }}</dd>
             </div>
-            <div class="flex items-start justify-between gap-4">
-                <dt class="text-slate-400">Emergency contact</dt>
-                <dd class="text-right font-medium text-white">
-                    {{ $resident->emergency_contact_name ?? '—' }}
-                    @if($resident->emergency_contact_number)
-                        <span class="block text-xs text-slate-400">{{ $resident->emergency_contact_number }}</span>
-                    @endif
-                </dd>
-            </div>
         </dl>
+        <div class="mt-6 border-t border-slate-700 pt-4">
+            <h3 class="text-sm font-semibold text-white">Linked Account</h3>
+            @if($resident->user)
+                <div class="mt-2 rounded-lg border border-slate-700 bg-slate-900/40 p-3">
+                    <p class="text-sm font-medium text-white">{{ $resident->user->name }}</p>
+                    <p class="text-xs text-slate-400">{{ $resident->user->email ?? $resident->user->phone }}</p>
+                    <p class="text-xs text-slate-500">Role: {{ str($resident->user->role->value)->headline() }}</p>
+                    @if(auth()->user()?->isAdmin())
+                        <form method="POST" action="{{ route('residents.unlink', $resident) }}" class="mt-2" onsubmit="return confirm('Unlink this account from the resident record?')">
+                            @csrf
+                            <button class="text-xs font-semibold text-rose-400 hover:text-rose-300">Unlink account</button>
+                        </form>
+                    @endif
+                </div>
+            @else
+                <p class="mt-2 text-xs text-slate-400">No account linked</p>
+                @if(auth()->user()?->isAdmin())
+                    <button type="button" onclick="document.getElementById('link-account-form-{{ $resident->id }}').classList.toggle('hidden')" class="mt-2 text-xs font-semibold text-sky-400 hover:text-sky-300">Link existing account</button>
+                    <form id="link-account-form-{{ $resident->id }}" method="POST" action="{{ route('residents.link', $resident) }}" class="mt-2 hidden space-y-2">
+                        @csrf
+                        <select name="user_id" class="w-full rounded-lg border border-slate-700 px-2 py-1 text-xs bg-slate-900 text-white" required>
+                            <option value="">Select account...</option>
+                            @foreach(\App\Models\User::where('role', \App\Enums\UserRole::Resident)->whereDoesntHave('resident')->get() as $user)
+                                <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email ?? $user->phone }})</option>
+                            @endforeach
+                        </select>
+                        <button class="w-full rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-sky-700">Link</button>
+                    </form>
+                @endif
+            @endif
+        </div>
     </div>
 </div>
 

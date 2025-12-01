@@ -31,12 +31,12 @@ class DashboardController extends Controller
         }
 
         $residentRecordQuery = Resident::query()->whereNull('archived_at');
-        $residentRecordCount = (clone $residentRecordQuery)->whereNull('user_id')->count();
+        $residentRecordCount = (clone $residentRecordQuery)->count();
 
         $stats = [
             'residents' => $user->canManageRecords()
                 ? $residentRecordCount
-                : ($user->residentProfile && is_null($user->residentProfile->archived_at) ? 1 : 0),
+                : ($user->resident() && is_null($user->resident?->archived_at) ? 1 : 0),
             'households' => $user->canManageRecords() ? Household::count() : 0,
             'pending_requests' => (clone $certificateQuery)->where('status', CertificateStatus::Pending)->count(),
             'requests_today' => (clone $certificateQuery)->whereDate('created_at', $now->toDateString())->count(),

@@ -29,6 +29,45 @@
                 </div>
             </div>
         </div>
+
+        @if($user->resident)
+            <div class="rounded-2xl border border-slate-800 bg-slate-800/50 p-5 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-base font-semibold text-white">My Resident Profile</h2>
+                    <span class="rounded-full bg-sky-500/20 px-3 py-1 text-xs font-semibold text-sky-300">Linked</span>
+                </div>
+                <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div>
+                        <p class="text-xs text-slate-400">Reference ID</p>
+                        <p class="mt-1 font-mono text-sm text-white">{{ $user->resident->reference_id }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400">Purok</p>
+                        <p class="mt-1 text-sm text-white">{{ $user->resident->purok ?? '—' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400">Years of Residency</p>
+                        <p class="mt-1 text-sm text-white">{{ $user->resident->years_of_residency ?? 0 }} years</p>
+                    </div>
+                    @if($user->resident->household)
+                        <div>
+                            <p class="text-xs text-slate-400">Household</p>
+                            <p class="mt-1 text-sm text-white">HH-{{ $user->resident->household->household_number }}</p>
+                        </div>
+                    @endif
+                    <div>
+                        <p class="text-xs text-slate-400">Residency Status</p>
+                        <p class="mt-1 text-sm text-white">{{ str($user->resident->residency_status)->headline() }}</p>
+                    </div>
+                    @if($user->resident->is_voter)
+                        <div>
+                            <p class="text-xs text-slate-400">Voter Status</p>
+                            <p class="mt-1 text-sm text-white">Registered{{ $user->resident->voter_precinct ? ' - Precinct ' . $user->resident->voter_precinct : '' }}</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        @endif
     @else
         <div class="rounded-3xl border border-slate-700 bg-linear-to-r from-slate-900 via-slate-800 to-slate-700 px-6 py-6 text-white shadow-lg">
             <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
@@ -51,25 +90,25 @@
                 <div class="flex items-center justify-between">
                     <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Residents</p>
                     <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-700/60 text-slate-200">
-                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.127a9.022 9.022 0 003.475-.668A2.25 2.25 0 0019.5 16.35v-.109a4.5 4.5 0 00-2.035-3.757l-.318-.21a1.012 1.012 0 01-.441-.838v-.346a5.25 5.25 0 10-10.5 0v.346c0 .339-.164.656-.441.838l-.318.21A4.5 4.5 0 003 16.24v.109a2.25 2.25 0 001.025 1.93A9.015 9.015 0 007.5 19.13m7.5-.003a9.06 9.06 0 01-7.5.003" />
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                     </span>
                 </div>
                 <p class="mt-4 text-3xl font-semibold text-white">{{ number_format($stats['residents']) }}</p>
-                <p class="mt-1 text-sm text-slate-400">Active resident profiles</p>
+                <p class="mt-1 text-sm text-slate-400">Active resident</p>
             </div>
             <div class="rounded-2xl border border-slate-800 bg-slate-800/60 p-5 shadow-sm">
                 <div class="flex items-center justify-between">
                     <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Households</p>
-                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-700/60 text-slate-200">
+                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">
                         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
                         </svg>
                     </span>
                 </div>
                 <p class="mt-4 text-3xl font-semibold text-white">{{ number_format($stats['households']) }}</p>
-                <p class="mt-1 text-sm text-slate-400">Registered household records</p>
+                <p class="mt-1 text-sm text-slate-400">Registered household</p>
             </div>
             <div class="rounded-2xl border border-slate-800 bg-slate-800/60 p-5 shadow-sm">
                 <div class="flex items-center justify-between">
@@ -161,7 +200,7 @@
                             <button type="button" data-analytics-timeframe="monthly" class="rounded-full px-3 py-1.5 text-xs font-semibold transition-colors {{ $defaultTimeframe === 'monthly' ? 'bg-sky-500 text-white shadow shadow-sky-500/40' : 'text-slate-400 hover:text-white/80' }}">Monthly</button>
                         </div>
                         <div class="rounded-2xl border border-slate-800/90 bg-slate-900/70 px-4 py-2 text-right shadow-lg shadow-sky-900/30">
-                            <p class="text-[0.65rem] uppercase tracking-wide text-slate-500">Total selected</p>
+                            <p class="text-[0.65rem] uppercase tracking-wide text-slate-500">Total</p>
                             <p class="text-3xl font-semibold text-white" data-analytics-summary-value>--</p>
                             <p class="text-xs text-slate-400" data-analytics-summary-label>Awaiting data</p>
                         </div>

@@ -6,6 +6,7 @@ use App\Http\Requests\Resident\StoreResidentRequest;
 use App\Http\Requests\Resident\UpdateResidentRequest;
 use App\Models\Household;
 use App\Models\Resident;
+use App\Models\User;
 use App\Services\ActivityLogger;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,11 +21,17 @@ class ResidentController extends Controller
 
     public function index(Request $request): View
     {
-        $filters = $request->only(['search', 'status', 'purok', 'voter']);
+        $filters = $request->only(['search', 'purok', 'link']);
 
         $residents = Resident::with(['household', 'user'])
             ->whereNull('archived_at')
-            ->whereNull('user_id')
+            ->when($filters['link'] ?? null, function (Builder $query, string $link): void {
+                if ($link === 'linked') {
+                    $query->whereNotNull('user_id');
+                } elseif ($link === 'unlinked') {
+                    $query->whereNull('user_id');
+                }
+            })
             ->when($request->filled('search'), function (Builder $query) use ($request): void {
                 $query->where(function (Builder $subQuery) use ($request): void {
                     $keyword = '%' . $request->string('search') . '%';
@@ -34,30 +41,10 @@ class ResidentController extends Controller
                         ->orWhere('reference_id', 'like', $keyword);
                 });
             })
-            ->when($request->filled('status'), fn (Builder $query) => $query->where('residency_status', $request->input('status')))
             ->when($request->filled('purok'), fn (Builder $query) => $query->where('purok', $request->input('purok')))
-            ->when($request->filled('voter'), function (Builder $query) use ($request): void {
-                $value = $request->input('voter');
-
-                if ($value === 'yes') {
-                    $query->where('is_voter', true);
-                } elseif ($value === 'no') {
-                    $query->where(function (Builder $subQuery): void {
-                        $subQuery->whereNull('is_voter')->orWhere('is_voter', false);
-                    });
-                }
-            })
             ->orderBy('last_name')
             ->paginate(15)
             ->withQueryString();
-
-        $statusOptions = Resident::query()
-            ->whereNull('archived_at')
-            ->whereNotNull('residency_status')
-            ->distinct()
-            ->orderBy('residency_status')
-            ->pluck('residency_status')
-            ->all();
 
         $purokOptions = Resident::query()
             ->whereNull('archived_at')
@@ -70,7 +57,6 @@ class ResidentController extends Controller
         return view('residents.index', [
             'residents' => $residents,
             'filters' => $filters,
-            'statusOptions' => $statusOptions,
             'purokOptions' => $purokOptions,
         ]);
     }
@@ -122,5 +108,51 @@ class ResidentController extends Controller
         $this->activityLogger->log('resident.archived', 'Resident archived', ['resident_id' => $resident->id]);
 
         return redirect()->route('residents.index')->with('status', 'Resident record archived.');
+    }
+
+    public function linkAccount(Request $request, Resident $resident): RedirectResponse
+    {
+        abort_unless($request->user()?->isAdmin(), 403);
+
+        $data = $request->validate([
+            'user_id' => ['required', 'exists:users,id'],
+        ]);
+
+        // Check if resident already has a linked account
+        if ($resident->user_id) {
+            return back()->with('error', 'Resident already has a linked account.');
+        }
+
+        // Check if user already has a linked resident record
+        $user = User::find($data['user_id']);
+        if ($user->resident) {
+            return back()->with('error', 'This account is already linked to another resident.');
+        }
+
+        $resident->update(['user_id' => $data['user_id']]);
+        $this->activityLogger->log('resident.linked', 'User account linked to resident', [
+            'resident_id' => $resident->id,
+            'user_id' => $data['user_id'],
+        ]);
+
+        return back()->with('status', 'Account successfully linked to resident record.');
+    }
+
+    public function unlinkAccount(Request $request, Resident $resident): RedirectResponse
+    {
+        abort_unless($request->user()?->isAdmin(), 403);
+
+        if (!$resident->user_id) {
+            return back()->with('error', 'Resident has no linked account.');
+        }
+
+        $userId = $resident->user_id;
+        $resident->update(['user_id' => null]);
+        $this->activityLogger->log('resident.unlinked', 'User account unlinked from resident', [
+            'resident_id' => $resident->id,
+            'user_id' => $userId,
+        ]);
+
+        return back()->with('status', 'Account successfully unlinked from resident record.');
     }
 }

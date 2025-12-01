@@ -31,8 +31,6 @@ return new class extends Migration
             $table->text('address_line')->nullable();
             $table->string('purok')->nullable();
             $table->string('education')->nullable();
-            $table->text('emergency_contact_name')->nullable();
-            $table->text('emergency_contact_number')->nullable();
             $table->text('remarks')->nullable();
             $table->timestamp('archived_at')->nullable();
             $table->timestamps();

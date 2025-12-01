@@ -7,10 +7,13 @@ use App\Enums\VerificationStatus;
 use App\Models\RegistrationRequest;
 use App\Models\Resident;
 use App\Models\User;
+use App\Notifications\RegistrationApprovedNotification;
+use App\Notifications\RegistrationRejectedNotification;
 use App\Services\ActivityLogger;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
 class AccountVerificationController extends Controller
@@ -79,17 +82,34 @@ class AccountVerificationController extends Controller
             'verified_at' => now(),
         ]);
 
-        Resident::create([
-            'user_id' => $user->id,
-            'first_name' => $registrationRequest->first_name,
-            'last_name' => $registrationRequest->last_name,
-            'email' => $registrationRequest->email,
-            'contact_number' => $registrationRequest->contact_number,
-            'address_line' => $registrationRequest->address_line,
-            'purok' => $registrationRequest->purok,
-            'years_of_residency' => $registrationRequest->years_of_residency,
-            'residency_status' => 'active',
-        ]);
+        // Try to find existing resident record to link
+        $existingResident = Resident::query()
+            ->whereNull('user_id') // Only match residents without linked accounts
+            ->where('first_name', $registrationRequest->first_name)
+            ->where('last_name', $registrationRequest->last_name)
+            ->first();
+
+        if ($existingResident) {
+            // Link existing resident record to the new user account
+            $existingResident->update([
+                'user_id' => $user->id,
+                'email' => $registrationRequest->email ?? $existingResident->email,
+                'contact_number' => $registrationRequest->contact_number ?? $existingResident->contact_number,
+            ]);
+        } else {
+            // Create new resident record if no match found
+            Resident::create([
+                'user_id' => $user->id,
+                'first_name' => $registrationRequest->first_name,
+                'last_name' => $registrationRequest->last_name,
+                'email' => $registrationRequest->email,
+                'contact_number' => $registrationRequest->contact_number,
+                'address_line' => $registrationRequest->address_line,
+                'purok' => $registrationRequest->purok,
+                'years_of_residency' => $registrationRequest->years_of_residency,
+                'residency_status' => 'active',
+            ]);
+        }
 
         $registrationRequest->update([
             'status' => VerificationStatus::Approved->value,
@@ -103,6 +123,20 @@ class AccountVerificationController extends Controller
             'registration_request_id' => $registrationRequest->id,
             'user_id' => $user->id,
         ]);
+
+        // Send approval notification via email if available, otherwise log to console (SMS placeholder)
+        if ($user->email) {
+            $user->notify(new RegistrationApprovedNotification(
+                $user->name,
+                $data['notes'] ?? null
+            ));
+        } elseif ($user->phone) {
+            // SMS notification (demo environment logs to console)
+            logger()->info('SMS Notification (Approval)', [
+                'to' => $user->phone,
+                'message' => "Hello {$user->name}! Your BRMS registration has been approved. You can now sign in to your account."
+            ]);
+        }
 
         return back()->with('status', $user->name . " has been approved and activated.");
     }
@@ -126,6 +160,21 @@ class AccountVerificationController extends Controller
             'registration_request_id' => $registrationRequest->id,
         ]);
 
+        // Send rejection notification via email if available, otherwise log to console (SMS placeholder)
+        if ($registrationRequest->email) {
+            Notification::route('mail', $registrationRequest->email)
+                ->notify(new RegistrationRejectedNotification(
+                    $registrationRequest->full_name,
+                    $data['notes']
+                ));
+        } elseif ($registrationRequest->contact_number) {
+            // SMS notification (demo environment logs to console)
+            logger()->info('SMS Notification (Rejection)', [
+                'to' => $registrationRequest->contact_number,
+                'message' => "Hello {$registrationRequest->full_name}, your BRMS registration request was not approved. Reason: {$data['notes']}"
+            ]);
+        }
+
         return back()->with('status', $registrationRequest->full_name . " was rejected.");
     }
 
@@ -136,5 +185,56 @@ class AccountVerificationController extends Controller
         abort_if(!$registrationRequest->proof_document_path || !Storage::disk('local')->exists($registrationRequest->proof_document_path), 404);
 
         return Storage::disk('local')->download($registrationRequest->proof_document_path, basename($registrationRequest->proof_document_path));
+    }
+
+    public function destroy(Request $request, RegistrationRequest $registrationRequest): RedirectResponse
+    {
+        $this->ensureStaff($request);
+
+        if ($registrationRequest->proof_document_path && Storage::disk('local')->exists($registrationRequest->proof_document_path)) {
+            Storage::disk('local')->delete($registrationRequest->proof_document_path);
+        }
+
+        $name = $registrationRequest->full_name;
+        $id = $registrationRequest->id;
+        $registrationRequest->delete();
+
+        $this->activityLogger->log('verification.deleted', 'Registration request deleted', [
+            'registration_request_id' => $id,
+            'deleted_by' => $request->user()->id,
+        ]);
+
+        return back()->with('status', $name . ' request deleted.');
+    }
+
+    public function bulkDestroy(Request $request): RedirectResponse
+    {
+        $this->ensureStaff($request);
+
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'exists:registration_requests,id'],
+        ]);
+
+        $records = RegistrationRequest::whereIn('id', $data['ids'])->get();
+        foreach ($records as $record) {
+            if ($record->proof_document_path && Storage::disk('local')->exists($record->proof_document_path)) {
+                Storage::disk('local')->delete($record->proof_document_path);
+            }
+        }
+
+        $count = 0;
+        foreach ($records as $record) {
+            $record->delete();
+            $count++;
+        }
+
+        $this->activityLogger->log('verification.bulk_deleted', 'Bulk deleted registration requests', [
+            'count' => $count,
+            'ids' => $data['ids'],
+            'deleted_by' => $request->user()->id,
+        ]);
+
+        return back()->with('status', $count . ' request(s) deleted.');
     }
 }

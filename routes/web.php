@@ -51,11 +51,24 @@ Route::middleware('auth')->group(function (): void {
 
     Route::middleware('role:admin,clerk')->group(function (): void {
         Route::resource('residents', ResidentController::class);
+        Route::post('residents/{resident}/link', [ResidentController::class, 'linkAccount'])->name('residents.link');
+        Route::post('residents/{resident}/unlink', [ResidentController::class, 'unlinkAccount'])->name('residents.unlink');
         Route::resource('households', HouseholdController::class)->except(['show']);
+        Route::get('household-records', [HouseholdRecordController::class, 'index'])->name('household-records.index');
+        Route::post('household-records', [HouseholdRecordController::class, 'store'])->name('household-records.store');
+        Route::get('household-records/template', [HouseholdRecordController::class, 'template'])->name('household-records.template');
+        Route::get('household-records/{householdRecord}/download', [HouseholdRecordController::class, 'download'])->name('household-records.download');
+        Route::get('resident-records', [ResidentRecordController::class, 'index'])->name('resident-records.index');
+        Route::post('resident-records', [ResidentRecordController::class, 'store'])->name('resident-records.store');
+        Route::get('resident-records/template', [ResidentRecordController::class, 'template'])->name('resident-records.template');
+        Route::get('resident-records/{residentRecord}/download', [ResidentRecordController::class, 'download'])->name('resident-records.download');
+
+        Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+    });
+
+    Route::middleware('role:admin')->group(function (): void {
         Route::prefix('accounts')->as('accounts.')->group(function (): void {
             Route::get('residents', [ResidentAccountController::class, 'index'])->name('residents.index');
-            Route::get('residents/create', [ResidentAccountController::class, 'create'])->name('residents.create');
-            Route::post('residents', [ResidentAccountController::class, 'store'])->name('residents.store');
             Route::get('residents/{resident}/edit', [ResidentAccountController::class, 'edit'])->name('residents.edit');
             Route::put('residents/{resident}', [ResidentAccountController::class, 'update'])->name('residents.update');
             Route::delete('residents/{resident}', [ResidentAccountController::class, 'destroy'])->name('residents.destroy');
@@ -67,29 +80,20 @@ Route::middleware('auth')->group(function (): void {
             Route::put('officials/{official}', [OfficialAccountController::class, 'update'])->name('officials.update');
             Route::delete('officials/{official}', [OfficialAccountController::class, 'destroy'])->name('officials.destroy');
         });
-        Route::get('household-records', [HouseholdRecordController::class, 'index'])->name('household-records.index');
-        Route::post('household-records', [HouseholdRecordController::class, 'store'])->name('household-records.store');
-        Route::get('household-records/template', [HouseholdRecordController::class, 'template'])->name('household-records.template');
-        Route::get('household-records/{householdRecord}/download', [HouseholdRecordController::class, 'download'])->name('household-records.download');
-        Route::get('resident-records', [ResidentRecordController::class, 'index'])->name('resident-records.index');
-        Route::post('resident-records', [ResidentRecordController::class, 'store'])->name('resident-records.store');
-        Route::get('resident-records/template', [ResidentRecordController::class, 'template'])->name('resident-records.template');
-        Route::get('resident-records/{residentRecord}/download', [ResidentRecordController::class, 'download'])->name('resident-records.download');
 
-        Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
         Route::get('verifications', [AccountVerificationController::class, 'index'])->name('verifications.index');
         Route::post('verifications/{registrationRequest}/approve', [AccountVerificationController::class, 'approve'])->name('verifications.approve');
         Route::post('verifications/{registrationRequest}/reject', [AccountVerificationController::class, 'reject'])->name('verifications.reject');
         Route::get('verifications/{registrationRequest}/proof', [AccountVerificationController::class, 'downloadProof'])->name('verifications.proof');
+        Route::delete('verifications/{registrationRequest}', [AccountVerificationController::class, 'destroy'])->name('verifications.destroy');
+        Route::post('verifications/bulk-destroy', [AccountVerificationController::class, 'bulkDestroy'])->name('verifications.bulk-destroy');
 
         Route::get('backups', [BackupController::class, 'index'])->name('backups.index');
         Route::post('backups', [BackupController::class, 'store'])->name('backups.store');
         Route::post('backups/restore/upload', [BackupController::class, 'restoreFromUpload'])->name('backups.restore-upload');
         Route::post('backups/{backup}/restore', [BackupController::class, 'restoreFromJob'])->name('backups.restore-job');
         Route::get('backups/{backup}/download', [BackupController::class, 'download'])->name('backups.download');
-    });
 
-    Route::middleware('role:admin')->group(function (): void {
         Route::get('certificate-fees', [CertificateFeeController::class, 'edit'])->name('certificates.fees.edit');
         Route::put('certificate-fees', [CertificateFeeController::class, 'update'])->name('certificates.fees.update');
     });

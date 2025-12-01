@@ -41,15 +41,17 @@
                     <label class="text-sm font-semibold text-slate-300">First Name</label>
                     <div class="input-group">
                         <i class="fas fa-user input-icon"></i>
-                        <input type="text" name="first_name" value="{{ old('first_name') }}" class="input-with-icon w-full rounded-lg border border-slate-700 px-3 py-2.5 text-base transition-all duration-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="Juan" required>
+                        <input type="text" name="first_name" value="{{ old('first_name') }}" data-validation-error="first-name-error" class="input-with-icon w-full rounded-lg border border-slate-700 px-3 py-2.5 text-base transition-all duration-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="Juan" required>
                     </div>
+                    <p id="first-name-error" class="hidden text-xs text-rose-400"><i class="fas fa-exclamation-circle mr-1"></i>First name is required</p>
                 </div>
                 <div class="space-y-2">
                     <label class="text-sm font-semibold text-slate-300">Last Name</label>
                     <div class="input-group">
                         <i class="fas fa-user input-icon"></i>
-                        <input type="text" name="last_name" value="{{ old('last_name') }}" class="input-with-icon w-full rounded-lg border border-slate-700 px-3 py-2.5 text-base transition-all duration-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="Dela Cruz" required>
+                        <input type="text" name="last_name" value="{{ old('last_name') }}" data-validation-error="last-name-error" class="input-with-icon w-full rounded-lg border border-slate-700 px-3 py-2.5 text-base transition-all duration-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="Dela Cruz" required>
                     </div>
+                    <p id="last-name-error" class="hidden text-xs text-rose-400"><i class="fas fa-exclamation-circle mr-1"></i>Last name is required</p>
                 </div>
             </div>
             <div class="flex justify-end">
@@ -61,12 +63,18 @@
             <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-300">
                 <i class="fas fa-at mr-2 text-emerald-500"></i>Contact & Verification
             </h3>
+            <div class="rounded-lg border border-emerald-700 bg-emerald-900/20 p-3">
+                <p class="text-xs text-emerald-300">
+                    <i class="fas fa-info-circle mr-1"></i>Provide at least one contact method (email is recommended) to continue.
+                </p>
+            </div>
+            
             <div class="space-y-3 rounded-xl border border-slate-700 bg-slate-900/40 p-4">
                 <div class="space-y-2">
-                    <label class="text-sm font-semibold text-slate-300">Email Address</label>
+                    <label class="text-sm font-semibold text-slate-300">Email Address <span class="text-xs font-normal text-slate-400">(Recommended)</span></label>
                     <div class="input-group">
                         <i class="fas fa-envelope input-icon"></i>
-                        <input type="email" name="email" value="{{ old('email') }}" data-input-email class="input-with-icon w-full rounded-lg border border-slate-700 px-3 py-2.5 text-base transition-all duration-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="you@example.com" required>
+                        <input type="email" name="email" value="{{ old('email') }}" data-input-email class="input-with-icon w-full rounded-lg border border-slate-700 px-3 py-2.5 text-base transition-all duration-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="you@example.com">
                     </div>
                 </div>
                 <div class="grid gap-3 sm:grid-cols-2">
@@ -79,12 +87,18 @@
                 <p data-status-message="email" class="text-xs text-slate-400">We will email a one-time code to confirm ownership.</p>
             </div>
 
+            <div class="relative flex items-center justify-center">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-slate-700"></div>
+                </div>
+            </div>
+
             <div class="space-y-3 rounded-xl border border-slate-700 bg-slate-900/40 p-4">
                 <div class="space-y-2">
-                    <label class="text-sm font-semibold text-slate-300">Contact Number</label>
+                    <label class="text-sm font-semibold text-slate-300">Contact Number <span class="text-xs font-normal text-slate-400">(Optional)</span></label>
                     <div class="input-group">
                         <i class="fas fa-phone input-icon"></i>
-                        <input type="text" name="contact_number" value="{{ old('contact_number') }}" data-input-phone class="input-with-icon w-full rounded-lg border border-slate-700 px-3 py-2.5 text-base transition-all duration-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="09XX XXX XXXX" required>
+                        <input type="text" name="contact_number" value="{{ old('contact_number') }}" data-input-phone class="input-with-icon w-full rounded-lg border border-slate-700 px-3 py-2.5 text-base transition-all duration-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="09XX XXX XXXX">
                     </div>
                 </div>
                 <div class="grid gap-3 sm:grid-cols-2">
@@ -94,7 +108,13 @@
                         <button type="button" data-verify-code="phone" class="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"><i class="fas fa-check mr-1"></i>Verify</button>
                     </div>
                 </div>
-                <p data-status-message="phone" class="text-xs text-slate-400">We’ll text an OTP to confirm your number. (Demo environment logs it to the console.)</p>
+                <p data-status-message="phone" class="text-xs text-slate-400">We'll text an OTP to confirm your number.</p>
+            </div>
+
+            <div data-contact-error class="hidden rounded-lg border border-rose-700 bg-rose-900/20 p-3">
+                <p class="text-xs text-rose-300">
+                    <i class="fas fa-exclamation-circle mr-1"></i>Please provide at least one contact method to continue.
+                </p>
             </div>
 
             <div class="flex items-center justify-between">
@@ -112,8 +132,9 @@
                     <label class="text-sm font-semibold text-slate-300">Years of Residency</label>
                     <div class="input-group">
                         <i class="fas fa-calendar-alt input-icon"></i>
-                        <input type="number" name="years_of_residency" min="0" value="{{ old('years_of_residency', 1) }}" class="input-with-icon w-full rounded-lg border border-slate-700 px-3 py-2.5 text-base transition-all duration-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" required>
+                        <input type="number" name="years_of_residency" min="0" value="{{ old('years_of_residency', 1) }}" data-validation-error="years-error" class="input-with-icon w-full rounded-lg border border-slate-700 px-3 py-2.5 text-base transition-all duration-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" required>
                     </div>
+                    <p id="years-error" class="hidden text-xs text-rose-400"><i class="fas fa-exclamation-circle mr-1"></i>Years of residency is required</p>
                 </div>
                 <div class="space-y-2">
                     <label class="text-sm font-semibold text-slate-300">Purok</label>
@@ -145,21 +166,23 @@
                     <label class="text-sm font-semibold text-slate-300">Password</label>
                     <div class="input-group">
                         <i class="fas fa-lock input-icon"></i>
-                        <input type="password" name="password" id="password" class="input-with-icon w-full rounded-lg border border-slate-700 px-3 py-2.5 pr-12 text-base transition-all duration-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="••••••••" required>
+                        <input type="password" name="password" id="password" data-validation-error="password-error" class="input-with-icon w-full rounded-lg border border-slate-700 px-3 py-2.5 pr-12 text-base transition-all duration-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="••••••••" required>
                         <button type="button" data-toggle-password data-target="password" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors">
                             <i class="fas fa-eye"></i>
                         </button>
                     </div>
+                    <p id="password-error" class="hidden text-xs text-rose-400"><i class="fas fa-exclamation-circle mr-1"></i>Password is required (min 8 characters)</p>
                 </div>
                 <div class="space-y-2">
                     <label class="text-sm font-semibold text-slate-300">Confirm Password</label>
                     <div class="input-group">
                         <i class="fas fa-lock input-icon"></i>
-                        <input type="password" name="password_confirmation" id="password_confirmation" class="input-with-icon w-full rounded-lg border border-slate-700 px-3 py-2.5 pr-12 text-base transition-all duration-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="••••••••" required>
+                        <input type="password" name="password_confirmation" id="password_confirmation" data-validation-error="password-confirm-error" class="input-with-icon w-full rounded-lg border border-slate-700 px-3 py-2.5 pr-12 text-base transition-all duration-200 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="••••••••" required>
                         <button type="button" data-toggle-password data-target="password_confirmation" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors">
                             <i class="fas fa-eye"></i>
                         </button>
                     </div>
+                    <p id="password-confirm-error" class="hidden text-xs text-rose-400"><i class="fas fa-exclamation-circle mr-1"></i>Passwords must match</p>
                 </div>
             </div>
             <div class="space-y-2">
@@ -175,18 +198,19 @@
                     </label>
                 </div>
                 <p class="text-xs text-slate-400"><i class="fas fa-info-circle mr-1 text-emerald-500"></i>Upload barangay ID, utility bill, or any residency proof.</p>
+                <p id="proof-error" class="hidden text-xs text-rose-400"><i class="fas fa-exclamation-circle mr-1"></i>Proof of residency document is required</p>
             </div>
             <div class="flex items-center justify-between">
                 <button type="button" data-prev-step class="rounded-lg border border-slate-600 px-5 py-2.5 text-sm font-semibold text-slate-200 transition-colors hover:bg-slate-800 hover:text-white"><i class="fas fa-arrow-left mr-2"></i>Back</button>
                 <button type="submit" class="rounded-lg bg-linear-to-r from-emerald-500 to-sky-500 px-6 py-2.5 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:shadow-xl hover:from-emerald-600 hover:to-sky-600"><i class="fas fa-check-circle mr-2"></i>Submit registration</button>
             </div>
-
-            <p class="pt-4 text-center text-sm text-slate-400">
-                Already registered?
-                <a href="{{ route('login') }}" class="font-semibold text-emerald-500 hover:text-emerald-300">Sign in instead</a>
-            </p>
         </section>
     </div>
+
+    <p class="mt-6 text-center text-sm text-slate-400">
+        Already registered?
+        <a href="{{ route('login') }}" class="font-semibold text-emerald-500 hover:text-emerald-300">Sign in instead</a>
+    </p>
 </form>
 
 <script>
@@ -198,7 +222,25 @@
 
         const steps = Array.from(wizard.querySelectorAll('[data-step]'));
         const progress = Array.from(wizard.querySelectorAll('[data-progress-step]'));
+        const emailInput = wizard.querySelector('[data-input-email]');
+        const phoneInput = wizard.querySelector('[data-input-phone]');
+        const contactError = wizard.querySelector('[data-contact-error]');
         let currentStep = 0;
+
+        const toggleContactError = (visible) => {
+            if (!contactError) {
+                return;
+            }
+            contactError.classList.toggle('hidden', !visible);
+        };
+
+        const validateContactStep = () => {
+            const hasEmail = Boolean((emailInput?.value ?? '').trim());
+            const hasPhone = Boolean((phoneInput?.value ?? '').trim());
+            const isValid = hasEmail || hasPhone;
+            toggleContactError(!isValid);
+            return isValid;
+        };
 
         const setStep = (index) => {
             if (index < 0 || index >= steps.length) {
@@ -219,8 +261,110 @@
             });
         };
 
+        const focusContactField = () => {
+            if (emailInput) {
+                emailInput.focus();
+                return;
+            }
+            phoneInput?.focus();
+        };
+
+        const validateStep = (stepIndex) => {
+            const step = steps[stepIndex];
+            if (!step) {
+                return true;
+            }
+
+            // Clear all error messages first
+            wizard.querySelectorAll('[id$="-error"]').forEach(el => el.classList.add('hidden'));
+
+            // Step 0: Profile - First Name and Last Name required
+            if (stepIndex === 0) {
+                const firstNameInput = step.querySelector('input[name="first_name"]');
+                const lastNameInput = step.querySelector('input[name="last_name"]');
+                
+                if (!firstNameInput?.value.trim()) {
+                    document.getElementById('first-name-error')?.classList.remove('hidden');
+                    firstNameInput?.focus();
+                    return false;
+                }
+                
+                if (!lastNameInput?.value.trim()) {
+                    document.getElementById('last-name-error')?.classList.remove('hidden');
+                    lastNameInput?.focus();
+                    return false;
+                }
+                return true;
+            }
+
+            // Step 1: Contact - At least one contact method required
+            if (stepIndex === 1) {
+                return validateContactStep();
+            }
+
+            // Step 2: Residency - Years of residency required
+            if (stepIndex === 2) {
+                const yearsInput = step.querySelector('input[name="years_of_residency"]');
+                if (!yearsInput?.value || yearsInput.value < 0) {
+                    document.getElementById('years-error')?.classList.remove('hidden');
+                    yearsInput?.focus();
+                    return false;
+                }
+                return true;
+            }
+
+            // Step 3: Security - Password and proof document required
+            if (stepIndex === 3) {
+                const passwordInput = step.querySelector('input[name="password"]');
+                const passwordConfirmInput = step.querySelector('input[name="password_confirmation"]');
+                const proofInput = step.querySelector('input[name="proof_document"]');
+
+                if (!passwordInput?.value) {
+                    document.getElementById('password-error')?.classList.remove('hidden');
+                    passwordInput?.focus();
+                    return false;
+                }
+
+                if (passwordInput.value.length < 8) {
+                    document.getElementById('password-error')?.classList.remove('hidden');
+                    passwordInput?.focus();
+                    return false;
+                }
+
+                if (!passwordConfirmInput?.value) {
+                    document.getElementById('password-confirm-error')?.classList.remove('hidden');
+                    passwordConfirmInput?.focus();
+                    return false;
+                }
+
+                if (passwordInput.value !== passwordConfirmInput.value) {
+                    document.getElementById('password-confirm-error')?.classList.remove('hidden');
+                    passwordConfirmInput?.focus();
+                    return false;
+                }
+
+                if (!proofInput?.files?.length) {
+                    document.getElementById('proof-error')?.classList.remove('hidden');
+                    proofInput?.focus();
+                    return false;
+                }
+
+                return true;
+            }
+
+            return true;
+        };
+
         wizard.querySelectorAll('[data-next-step]').forEach((btn) => {
-            btn.addEventListener('click', () => setStep(currentStep + 1));
+            btn.addEventListener('click', () => {
+                if (!validateStep(currentStep)) {
+                    if (currentStep === 1) {
+                        focusContactField();
+                    }
+                    return;
+                }
+                setStep(currentStep + 1);
+            });
         });
 
         wizard.querySelectorAll('[data-prev-step]').forEach((btn) => {
@@ -364,6 +508,19 @@
                     button.disabled = false;
                 }
             });
+        });
+
+        wizard.addEventListener('submit', (event) => {
+            if (!validateContactStep()) {
+                event.preventDefault();
+                setStep(1);
+                focusContactField();
+            }
+        });
+
+        ['input', 'blur'].forEach((eventName) => {
+            emailInput?.addEventListener(eventName, validateContactStep);
+            phoneInput?.addEventListener(eventName, validateContactStep);
         });
 
         setStep(0);

@@ -116,8 +116,6 @@ class ResidentRecordController extends Controller
             'Address Line',
             'Purok',
             'Education',
-            'Emergency Contact Name',
-            'Emergency Contact Number',
             'Remarks',
         ];
 
@@ -145,8 +143,6 @@ class ResidentRecordController extends Controller
                 'address_line',
                 'purok',
                 'education',
-                'emergency_contact_name',
-                'emergency_contact_number',
                 'remarks',
             ]);
 
@@ -178,8 +174,6 @@ class ResidentRecordController extends Controller
                     $resident->address_line,
                     $resident->purok,
                     $resident->education,
-                    $resident->emergency_contact_name,
-                    $resident->emergency_contact_number,
                     $resident->remarks,
                 ]);
             }
@@ -456,8 +450,6 @@ class ResidentRecordController extends Controller
             'address', 'address line' => 'address_line',
             'purok' => 'purok',
             'education' => 'education',
-            'emergency contact name' => 'emergency_contact_name',
-            'emergency contact number' => 'emergency_contact_number',
             'remarks', 'notes' => 'remarks',
             default => null,
         };
@@ -485,11 +477,6 @@ class ResidentRecordController extends Controller
             $payload['is_voter'] = $bool;
         }
 
-        foreach (['contact_number', 'emergency_contact_number'] as $numericField) {
-            if (isset($payload[$numericField])) {
-                $payload[$numericField] = preg_replace('/[^0-9+]/', '', (string) $payload[$numericField]) ?? null;
-            }
-        }
 
         if (!isset($payload['residency_status'])) {
             $payload['residency_status'] = null;

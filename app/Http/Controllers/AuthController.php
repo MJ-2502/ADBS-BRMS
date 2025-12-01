@@ -64,14 +64,16 @@ class AuthController extends Controller
 
     public function register(RegisterRequest $request): RedirectResponse
     {
-        $this->consumeVerificationToken(
-            $request->input('email_verification_token'),
-            $request->email,
-            VerificationCode::TYPE_EMAIL
-        );
+        if ($request->email && $request->input('email_verification_token')) {
+            $this->consumeVerificationToken(
+                $request->input('email_verification_token'),
+                $request->email,
+                VerificationCode::TYPE_EMAIL
+            );
+        }
 
         $contactNumber = $request->contact_number;
-        if ($contactNumber) {
+        if ($contactNumber && $request->input('contact_verification_token')) {
             $this->consumeVerificationToken(
                 $request->input('contact_verification_token'),
                 $contactNumber,

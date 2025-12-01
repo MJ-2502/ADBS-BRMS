@@ -18,12 +18,11 @@
         <input type="text" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Search by name, purok, or reference" class="mt-1 w-full rounded-lg border border-slate-700 px-3 py-2 bg-slate-900 text-white placeholder-slate-400">
     </div>
     <div>
-        <label class="text-xs font-semibold uppercase tracking-wide text-slate-400">Status</label>
-        <select name="status" class="mt-1 w-full rounded-lg border border-slate-700 px-3 py-2 bg-slate-900 text-white">
-            <option value="">All residency statuses</option>
-            @foreach($statusOptions as $status)
-                <option value="{{ $status }}" @selected(($filters['status'] ?? '') === $status)>{{ str($status)->headline() }}</option>
-            @endforeach
+        <label class="text-xs font-semibold uppercase tracking-wide text-slate-400">Link status</label>
+        <select name="link" class="mt-1 w-full rounded-lg border border-slate-700 px-3 py-2 bg-slate-900 text-white">
+            <option value="">All</option>
+            <option value="linked" @selected(($filters['link'] ?? '') === 'linked')>Linked to account</option>
+            <option value="unlinked" @selected(($filters['link'] ?? '') === 'unlinked')>Not linked</option>
         </select>
     </div>
     <div>
@@ -35,21 +34,17 @@
             @endforeach
         </select>
     </div>
-    <div>
-        <label class="text-xs font-semibold uppercase tracking-wide text-slate-400">Voter</label>
-        <select name="voter" class="mt-1 w-full rounded-lg border border-slate-700 px-3 py-2 bg-slate-900 text-white">
-            <option value="">All voters</option>
-            <option value="yes" @selected(($filters['voter'] ?? '') === 'yes')>Registered voters</option>
-            <option value="no" @selected(($filters['voter'] ?? '') === 'no')>Non-voters</option>
-        </select>
-    </div>
-    <div class="flex items-end gap-2 sm:col-span-2 lg:col-span-4">
-        <button class="rounded-lg bg-slate-700 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-600">Apply</button>
-        <a href="{{ route('residents.index') }}" class="rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-900">Reset</a>
+    <div class="flex items-end gap-2">
+        <button class="flex-1 rounded-lg bg-slate-700 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-600">Apply</button>
+        <a href="{{ route('residents.index') }}" class="rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-800">Reset</a>
     </div>
 </form>
 
 <div class="mt-6 overflow-hidden rounded-2xl border border-slate-800 bg-slate-800/50">
+    <div class="flex items-center justify-between border-b border-slate-700 px-4 py-3">
+        <a href="{{ route('resident-records.template') }}" class="rounded-lg bg-slate-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-600">Download</a>
+        <p class="text-xs text-slate-400">{{ $residents->total() }} total</p>
+    </div>
     <table class="w-full text-sm">
         <thead class="bg-slate-900/50 text-left text-xs uppercase tracking-wide text-slate-400">
             <tr>

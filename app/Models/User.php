@@ -90,6 +90,11 @@ class User extends Authenticatable
         return $this->hasOne(Resident::class);
     }
 
+    public function resident(): HasOne
+    {
+        return $this->hasOne(Resident::class);
+    }
+
     public function certificateRequests(): HasMany
     {
         return $this->hasMany(CertificateRequest::class, 'requested_by');
